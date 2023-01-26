@@ -1,11 +1,151 @@
-﻿using System.IO.Enumeration;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace MonoBuild.Core;
 
+public record ParentChild(
+    RepositoryTarget Parent,
+    RepositoryTarget Child)
+{
+    public ParentChild MakeChild(
+        RepositoryTarget child) => new(this.Child, child);
+}
+
+public class DependancyList
+{
+  
+    private Stack<ParentChild> path = new Stack<ParentChild>();
+    
+
+    public void Add(ParentChild parentChild)
+    {
+        if (path.TryPeek(out var head) && head.Parent == parentChild.Parent)
+        {
+            path.Pop();
+        }
+
+        path.Push(parentChild);
+        if (path.GroupBy(p => p.Child).Any(grp => grp.Count() > 1))
+        {
+            throw new InvalidOperationException($"Circular dependency detected: {UnwindPath()}");
+        }
+     
+    }
+
+    private string UnwindPath()
+    {
+        var pathstring = new StringBuilder().Append("Path:").AppendLine();
+        while (path.TryPop(out var item))
+        {
+            pathstring.Append(item.Child.Directory).Append("<=").AppendLine();
+        }
+        return pathstring.ToString();
+    }
+
+    public void DependancyFinished()
+    {
+        path.Pop();
+    }
+}
+
+internal class BuildLoader
+{
+    private  Stack<ParentChild[]?> DependancyStack { get; }
+    public DependancyList Path { get; }
+    public Dictionary<RepositoryTarget, BuildDirectoryConstruction> Result { get; }
+    private readonly AbsoluteTarget _buildFor;
+    public BuildLoader(AbsoluteTarget target
+      )
+    {
+        DependancyStack = new Stack<ParentChild[]?>();
+        Path = new DependancyList();
+        Result = new Dictionary<RepositoryTarget, BuildDirectoryConstruction>();
+        _buildFor = target;
+        DependancyStack.Push(new ParentChild[] { new ParentChild(Build.TARGET, target.BuildDirectory) });
+    }
+
+    public bool TargetSeenBefore(
+        RepositoryTarget targetDir)
+        => Result.ContainsKey(targetDir);
+
+    public void AddParentToChild(
+        ParentChild parentChild)
+    {
+        var buildPage = Result[parentChild.Child];
+        buildPage.AddParent(parentChild.Parent);
+    }
+
+    public bool BuildDirectoriesLeftToProcess([MaybeNullWhen(false)] out ParentChild[] items)
+        => DependancyStack.TryPop(out items);
+
+    public void LoadTargetDependancies(
+        ILoadBuildDirectory buildDirectoryLoader,
+        ParentChild item
+       )
+    {
+        var currentBuild = buildDirectoryLoader.Load(_buildFor with { BuildDirectory = item.Child });
+        var children = GetRepositoryLocations(currentBuild.Targets, item.Child);
+        var parentChildren = children.Select(c => item.MakeChild(c.Directory)).ToArray();
+        if (parentChildren.Any())
+        {
+            DependancyStack.Push(parentChildren);
+        }
+        else
+        {
+            //No children to load so not going further down this path
+            Path.DependancyFinished();
+        }
+        Result.Add(item.Child, new BuildDirectoryConstruction(currentBuild.IgnoreGlobs, children, item));
+    }
+
+    private static List<RepositoryTarget> GetRepositoryLocations(
+        Collection<DependancyLocation> targets,
+        RepositoryTarget parent)
+        => targets
+            .Select(target => new RepositoryTarget(parent.GetRepositoryBasedNameFor(target.RepositoryLocation)))
+            .ToList();
+
+    public ParentChild RetreiveFirstItemPushingAllOthersBackOnStack(ParentChild[] items)
+    {
+        var (item, tail) = (items[0], items[1..]);
+        Path.Add(item);
+        if (tail.Any())
+        {
+            DependancyStack.Push(tail);
+        }
+        return item;
+    }
+}
+
 public class Build
 {
     public const string TARGET = "TARGET";
+
+    public static Dictionary<RepositoryTarget, BuildDirectory> Load(
+        ILoadBuildDirectory buildDirectoryLoader,
+       AbsoluteTarget buildDirectory)
+    {
+        var builderLoader = new BuildLoader(buildDirectory);
+        while ( builderLoader.BuildDirectoriesLeftToProcess(out var items))
+        {
+            var firstItem = builderLoader.RetreiveFirstItemPushingAllOthersBackOnStack(items);
+            if (builderLoader.TargetSeenBefore(firstItem.Child))
+            {
+                builderLoader.AddParentToChild(firstItem);
+            }
+            else
+            {
+                builderLoader.LoadTargetDependancies(buildDirectoryLoader, firstItem);
+            }
+        }
+
+        return builderLoader.Result.ToDictionary(r => r.Key, r => r.Value.ToBuildDirectory());
+    }
+
+
+
 
     /// <summary>
     /// Is a build required for the current buildDirectories required.

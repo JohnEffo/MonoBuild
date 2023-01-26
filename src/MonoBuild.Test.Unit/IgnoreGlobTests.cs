@@ -23,6 +23,8 @@ public class IgnoreGlobTests
     [InlineData("*", "should handle any file glob")]
     [InlineData("", "should handle no file after directory")]
     [InlineData("subdirectory/*.txt", "should handle any text in sub-directory")]
+
+
     public void Can_ignore_files_which_are_part_of_another_dependency(string globEnd, string description)
     { 
         //Arrange

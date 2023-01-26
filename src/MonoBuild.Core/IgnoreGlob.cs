@@ -6,42 +6,42 @@ namespace MonoBuild.Core;
 public abstract record IgnoreGlob(Glob Glob)
 {
     public static IgnoreGlob Construct(
-        string globPattern,RepositoryTarget currentBuild, Collection<RepositoryTarget> dependancies)
+        Glob glob,RepositoryTarget currentBuild, Collection<RepositoryTarget> dependancies)
     {
-        if (globPattern.StartsWith(".."))
+        if (glob.Pattern.StartsWith(".."))
         {
-            return BuiltRelativeBlob(globPattern, currentBuild, dependancies);
+            return BuiltRelativeBlob(glob, currentBuild, dependancies);
         }
 
-        return new Local(globPattern);
+        return new Local(glob);
     }
 
     private static IgnoreGlob BuiltRelativeBlob(
-        string globPattern,
+        Glob glob,
         RepositoryTarget currentBuild,
         Collection<RepositoryTarget> dependancies)
     {
         //Ensure relative globs have / not \ because the globing matcher produces matches with / as the path separator
-        var dir = Path.GetDirectoryName(Path.Combine(currentBuild.Directory, globPattern))?.Replace("\\","/");
+        var dir = Path.GetDirectoryName(Path.Combine(currentBuild.Directory, glob.Pattern))?.Replace("\\", "/");
         var dependencyPattern = new DirectoryInfo(dir).FullName.Replace("\\", "/").Replace(Environment.CurrentDirectory.Replace("\\", "/") + "/", "");
         var matchingDependency = dependancies.FirstOrDefault(dep => dependencyPattern.StartsWith(dep.Directory));
         if (matchingDependency == null)
         {
             throw new ArgumentException(
-                $"Cannot create an ignore for {globPattern} as it is not a member of any provided dependency",
-                nameof(globPattern));
+                $"Cannot create an ignore for {glob.Pattern} as it is not a member of any provided dependency",
+                nameof(glob));
         }
 
-        return new Relative(ConstructDependancyGlobPattern(dependencyPattern, globPattern), matchingDependency);
+        return new Relative(ConstructDependancyGlobPattern(dependencyPattern, glob), matchingDependency);
     }
 
     private static Glob ConstructDependancyGlobPattern(
         string dependencyPattern,
-        string globPattern)
+        Glob glob)
     {
         var lastDir = dependencyPattern.Split("/").Last();
         return new StringBuilder(dependencyPattern)
-            .Append(globPattern.Split(lastDir).LastOrDefault() ?? "").ToString();
+            .Append(glob.Pattern.Split(lastDir).LastOrDefault() ?? "").ToString();
     }
 
     public record Local(

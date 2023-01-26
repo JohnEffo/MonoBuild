@@ -3,12 +3,15 @@
 namespace MonoBuild.Core;
 
 public record BuildDirectory(RepositoryTarget Directory,
-    Collection<IgnoreGlob> IgnoredGlobs,
+    IEnumerable<IgnoreGlob> IgnoredGlobs,
 params RepositoryTarget[] Parents );
 
 public record DirectoryLoadResult(
-    Collection<Glob> IgnoredGlobs,
-    Collection<RepositoryTarget> Targets);
+    Collection<Glob> IgnoreGlobs,
+    Collection<DependancyLocation> Targets);
+
+public record DependancyLocation(
+    string RepositoryLocation);
 
 
 public record Glob(
@@ -26,25 +29,40 @@ public record RepositoryTarget(
 {
     public static implicit operator RepositoryTarget(
         string Directory) => new RepositoryTarget(Directory);
+
+    public string GetRepositoryBasedNameFor(
+        string path)
+    {
+        var readOnlySpan = Path.Combine(Directory, path).Replace("\\", "/");
+        var dir = Path.GetDirectoryName(readOnlySpan).Replace("\\", "/");
+        return new DirectoryInfo(dir).FullName.Replace("\\", "/").Replace(Environment.CurrentDirectory.Replace("\\", "/") + "/", "");
+    }
 }
 
 /// <summary>
 /// The absolute target directory
 /// </summary>
-/// <param name="RepositoryTarget">The repository relative target directory</param>
+/// <param name="BuildDirectory">The repository relative target directory</param>
 /// <param name="Repository">The repository the build is located in</param>
 public record AbsoluteTarget(
-    RepositoryTarget RepositoryTarget,
+    RepositoryTarget BuildDirectory,
     GitRepository Repository)
 {
     /// <summary>
     /// The absolute path we would need to give to the file system to access the directory
     /// </summary>
-    public string AbsolutePath => Path.Combine(Repository.Directory, RepositoryTarget.Directory);
+    public string AbsolutePath => Path.Combine(Repository.Directory, BuildDirectory.Directory);
+
+    
 }
 
 /// <summary>
 /// The repository the build is located in.
 /// </summary>
 /// <param name="Directory">The absolute directory of the repository</param>
-public record GitRepository(string Directory);
+public record GitRepository(
+    string Directory)
+{
+    public static implicit operator GitRepository(
+        string Directory) => new GitRepository(Directory);
+}
