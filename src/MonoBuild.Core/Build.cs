@@ -12,8 +12,6 @@ public record ParentChild(
         RepositoryTarget child) => new(this.Child, child);
 }
 
-
-
 public class Build
 {
     public const string TARGET = "TARGET";
@@ -26,10 +24,10 @@ public class Build
     /// <returns></returns>
     public static async Task<Dictionary<RepositoryTarget, BuildDirectory>> LoadAsync(
         ILoadBuildDirectory buildDirectoryLoader,
-       AbsoluteTarget buildDirectory)
+        AbsoluteTarget buildDirectory)
     {
         var builderLoader = new BuildLoader(buildDirectory);
-        while ( builderLoader.BuildDirectoriesLeftToProcess(out var items))
+        while (builderLoader.BuildDirectoriesLeftToProcess(out var items))
         {
             var firstItem = builderLoader.RetreiveFirstItemPushingAllOthersBackOnStack(items);
             if (builderLoader.TargetSeenBefore(firstItem.Child))
@@ -38,7 +36,7 @@ public class Build
             }
             else
             {
-               await builderLoader.LoadTargetDependancies(buildDirectoryLoader, firstItem);
+                await builderLoader.LoadTargetDependancies(buildDirectoryLoader, firstItem);
             }
         }
 
@@ -56,7 +54,8 @@ public class Build
         ISet<string> changes,
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories)
     {
-        var changesInADependantDirectory =RemoveAnyChangesNotInBuildDependancyList(changes, buildIDirectories.Select(kv => kv.Key.Directory).ToHashSet());
+        var changesInADependantDirectory = RemoveAnyChangesNotInBuildDependancyList(changes,
+            buildIDirectories.Select(kv => kv.Key.Directory).ToHashSet());
         if (!changesInADependantDirectory.Any())
         {
             return new ShouldBuild.No();
@@ -75,6 +74,7 @@ public class Build
         {
             return new ShouldBuild.No();
         }
+
         return new ShouldBuild.Yes(changesNotRemovedByTransitiveExclusions);
     }
 
@@ -98,9 +98,9 @@ public class Build
                 BuildDirectories = GetBuildDirectoriesWhichContainFile(buildIDirectories, file)
             })
             .Where(fileBuildInfo =>
-                !FileExcludedByAllImmediateParents(fileBuildInfo.FileName, fileBuildInfo.BuildDirectories, buildIDirectories))
+                !FileExcludedByAllImmediateParents(fileBuildInfo.FileName, fileBuildInfo.BuildDirectories,
+                    buildIDirectories))
             .Select(fileBuildInfo => fileBuildInfo.FileName).ToHashSet();
-        
     }
 
     private static bool FileExcludedByAllImmediateParents(
@@ -116,14 +116,18 @@ public class Build
         {
             return false;
         }
-        return  parentWhichCouldHaveExlusions.All(parent => FileExcludedByParent(fileName, buildDirectoryMap[parent]));
+
+        return parentWhichCouldHaveExlusions.All(parent => FileExcludedByParent(fileName, buildDirectoryMap[parent]));
     }
-    private static bool FileExcludedByParent(string fileName,
+
+    private static bool FileExcludedByParent(
+        string fileName,
         BuildDirectory buildDirectory)
     {
         Matcher matcher = new();
-        var excludePatternsGroups= buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Relative>().Select(glob => glob.Glob.Pattern);
-       
+        var excludePatternsGroups =
+            buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Relative>().Select(glob => glob.Glob.Pattern);
+
         matcher.AddIncludePatterns(excludePatternsGroups);
         return matcher.Match(fileName).Files.Any();
     }
@@ -141,26 +145,32 @@ public class Build
     /// <param name="changesInABuildDirectory">The changes which occur in build directories</param>
     /// <param name="buildIDirectories">The build directories</param>
     /// <returns></returns>
-    private static ISet<string>  GetChangesNotRemovedByLocalExclusions(
+    private static ISet<string> GetChangesNotRemovedByLocalExclusions(
         ISet<string> changesInABuildDirectory,
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories)
         => buildIDirectories
             .Values
-            .Select(filterDirectory => new KeyValuePair<BuildDirectory, IEnumerable<string>> (filterDirectory, FilterChangesToThoseInDirectory(changesInABuildDirectory, filterDirectory)))
+            .Select(filterDirectory => new KeyValuePair<BuildDirectory, IEnumerable<string>>(filterDirectory,
+                FilterChangesToThoseInDirectory(changesInABuildDirectory, filterDirectory)))
             .SelectMany(kv => GetFilesNotExcluded(kv.Key, kv.Value))
             .ToHashSet();
-    
 
-    private static IEnumerable<string> GetFilesNotExcluded(BuildDirectory buildDirectory, IEnumerable<string> files)
+
+    private static IEnumerable<string> GetFilesNotExcluded(
+        BuildDirectory buildDirectory,
+        IEnumerable<string> files)
     {
         Matcher matcher = new();
-        var excludePatternsGroups = buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Local>().Select(t => "**\\" + t.Glob.Pattern);
+        var excludePatternsGroups =
+            buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Local>().Select(t => "**\\" + t.Glob.Pattern);
         matcher.AddIncludePatterns(excludePatternsGroups);
         var filesToRemove = matcher.Match(files).Files.Select(f => f.Path);
         return files.Where(file => !filesToRemove.Contains(file));
     }
 
-    private static IEnumerable<string> FilterChangesToThoseInDirectory(ISet<string> changesInABuildDirectory, BuildDirectory dir)
+    private static IEnumerable<string> FilterChangesToThoseInDirectory(
+        ISet<string> changesInABuildDirectory,
+        BuildDirectory dir)
     {
         return changesInABuildDirectory.Where(change => change.StartsWith(dir.Directory.Directory));
     }
@@ -168,5 +178,12 @@ public class Build
     private static ISet<string> RemoveAnyChangesNotInBuildDependancyList(
         ISet<string> changes,
         HashSet<string> buildDirectories)
-        => changes.Where(change => buildDirectories.Any(directory => change.StartsWith(directory))).ToHashSet();
+        => changes
+            .Where(change => !IsMonobuildfile(change))
+            .Where(change => buildDirectories.Any(directory => change.StartsWith(directory)))
+            .ToHashSet();
+
+    private static bool IsMonobuildfile(
+        string change)
+        => change.EndsWith(".monobuild.ignore") || change.EndsWith(".monobuild.deps");
 }
