@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using FluentAssertions.Execution;
 
-namespace MonoBuild.Test.Unit.BuildTests;
+namespace MonoBuild.Test.BuildTests;
 
 public class IsRequired
 {
@@ -274,20 +273,4 @@ public class IsRequired
         build.Should().Be(ShouldBuild.No);
     }
     
-}
-
-public static class IgnoreGlobFactory
-{
-    public  static Collection<IgnoreGlob> IgnoreLocalFilesOfType(this RepositoryTarget buildDirectory,
-        params string[] globPatterns)
-    {
-        var result = new Collection<IgnoreGlob>();
-        return globPatterns.Aggregate(result, (
-            globs,
-            globPattern) =>
-        {
-            globs.Add(IgnoreGlob.Construct(globPattern, buildDirectory, new Collection<RepositoryTarget>()));
-            return globs;
-        });
-    }
 }

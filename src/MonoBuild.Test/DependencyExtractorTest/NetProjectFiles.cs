@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace MonoBuild.Test.Unit.DependencyExtractorTest;
+namespace MonoBuild.Test.DependencyExtractorTest;
 
 public class NetProjectFiles
 {

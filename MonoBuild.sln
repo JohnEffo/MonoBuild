@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoBuild.CLI", "src\MonoBu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoBuild.Core", "src\MonoBuild.Core\MonoBuild.Core.csproj", "{B45BA70A-2009-45CB-AA09-BD9BF252AE00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoBuild.Test.Unit", "src\MonoBuild.Test.Unit\MonoBuild.Test.Unit.csproj", "{6C3FA56A-F202-417F-A31D-A3234D43E813}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoBuild.Test", "src\MonoBuild.Test\MonoBuild.Test.csproj", "{DAC4AD63-6167-4BD1-8049-AD93964B5B5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,10 @@ Global
 		{B45BA70A-2009-45CB-AA09-BD9BF252AE00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B45BA70A-2009-45CB-AA09-BD9BF252AE00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B45BA70A-2009-45CB-AA09-BD9BF252AE00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C3FA56A-F202-417F-A31D-A3234D43E813}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C3FA56A-F202-417F-A31D-A3234D43E813}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C3FA56A-F202-417F-A31D-A3234D43E813}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C3FA56A-F202-417F-A31D-A3234D43E813}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAC4AD63-6167-4BD1-8049-AD93964B5B5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAC4AD63-6167-4BD1-8049-AD93964B5B5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAC4AD63-6167-4BD1-8049-AD93964B5B5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAC4AD63-6167-4BD1-8049-AD93964B5B5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,7 +36,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C45B5F4F-AF68-4DBB-83EA-31C0E38479BE} = {B540BC5F-AA2A-45D4-B92D-8FD4EA1968CC}
 		{B45BA70A-2009-45CB-AA09-BD9BF252AE00} = {B540BC5F-AA2A-45D4-B92D-8FD4EA1968CC}
-		{6C3FA56A-F202-417F-A31D-A3234D43E813} = {B540BC5F-AA2A-45D4-B92D-8FD4EA1968CC}
+		{DAC4AD63-6167-4BD1-8049-AD93964B5B5D} = {B540BC5F-AA2A-45D4-B92D-8FD4EA1968CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B4FA875E-CFAB-4527-8022-7324E382972E}

@@ -1,7 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using Microsoft.Extensions.FileSystemGlobbing;
+﻿using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace MonoBuild.Core;
 
@@ -13,117 +10,17 @@ public record ParentChild(
         RepositoryTarget child) => new(this.Child, child);
 }
 
-public class DependancyList
-{
-  
-    private Stack<ParentChild> path = new Stack<ParentChild>();
-    
-
-    public void Add(ParentChild parentChild)
-    {
-        if (path.TryPeek(out var head) && head.Parent == parentChild.Parent)
-        {
-            path.Pop();
-        }
-
-        path.Push(parentChild);
-        if (path.GroupBy(p => p.Child).Any(grp => grp.Count() > 1))
-        {
-            throw new InvalidOperationException($"Circular dependency detected: {UnwindPath()}");
-        }
-     
-    }
-
-    private string UnwindPath()
-    {
-        var pathstring = new StringBuilder().Append("Path:").AppendLine();
-        while (path.TryPop(out var item))
-        {
-            pathstring.Append(item.Child.Directory).Append("<=").AppendLine();
-        }
-        return pathstring.ToString();
-    }
-
-    public void DependancyFinished()
-    {
-        path.Pop();
-    }
-}
-
-internal class BuildLoader
-{
-    private  Stack<ParentChild[]?> DependancyStack { get; }
-    public DependancyList Path { get; }
-    public Dictionary<RepositoryTarget, BuildDirectoryConstruction> Result { get; }
-    private readonly AbsoluteTarget _buildFor;
-    public BuildLoader(AbsoluteTarget target
-      )
-    {
-        DependancyStack = new Stack<ParentChild[]?>();
-        Path = new DependancyList();
-        Result = new Dictionary<RepositoryTarget, BuildDirectoryConstruction>();
-        _buildFor = target;
-        DependancyStack.Push(new ParentChild[] { new ParentChild(Build.TARGET, target.BuildDirectory) });
-    }
-
-    public bool TargetSeenBefore(
-        RepositoryTarget targetDir)
-        => Result.ContainsKey(targetDir);
-
-    public void AddParentToChild(
-        ParentChild parentChild)
-    {
-        var buildPage = Result[parentChild.Child];
-        buildPage.AddParent(parentChild.Parent);
-    }
-
-    public bool BuildDirectoriesLeftToProcess([MaybeNullWhen(false)] out ParentChild[] items)
-        => DependancyStack.TryPop(out items);
-
-    public void LoadTargetDependancies(
-        ILoadBuildDirectory buildDirectoryLoader,
-        ParentChild item
-       )
-    {
-        var currentBuild = buildDirectoryLoader.Load(_buildFor with { BuildDirectory = item.Child });
-        var children = GetRepositoryLocations(currentBuild.Targets, item.Child);
-        var parentChildren = children.Select(c => item.MakeChild(c.Directory)).ToArray();
-        if (parentChildren.Any())
-        {
-            DependancyStack.Push(parentChildren);
-        }
-        else
-        {
-            //No children to load so not going further down this path
-            Path.DependancyFinished();
-        }
-        Result.Add(item.Child, new BuildDirectoryConstruction(currentBuild.IgnoreGlobs, children, item));
-    }
-
-    private static List<RepositoryTarget> GetRepositoryLocations(
-        Collection<DependancyLocation> targets,
-        RepositoryTarget parent)
-        => targets
-            .Select(target => new RepositoryTarget(parent.GetRepositoryBasedNameFor(target.RepositoryLocation)))
-            .ToList();
-
-    public ParentChild RetreiveFirstItemPushingAllOthersBackOnStack(ParentChild[] items)
-    {
-        var (item, tail) = (items[0], items[1..]);
-        Path.Add(item);
-        if (tail.Any())
-        {
-            DependancyStack.Push(tail);
-        }
-        return item;
-    }
-}
-
 public class Build
 {
     public const string TARGET = "TARGET";
 
-    public static Dictionary<RepositoryTarget, BuildDirectory> Load(
+    /// <summary>
+    /// Load the build directory into the dictionary used to determine is the build is required
+    /// </summary>
+    /// <param name="buildDirectoryLoader">Used to access the file system</param>
+    /// <param name="buildDirectory">The directory to load build information for</param>
+    /// <returns></returns>
+    public static async Task<Dictionary<RepositoryTarget, BuildDirectory>> LoadAsync(
         ILoadBuildDirectory buildDirectoryLoader,
        AbsoluteTarget buildDirectory)
     {
@@ -137,7 +34,7 @@ public class Build
             }
             else
             {
-                builderLoader.LoadTargetDependancies(buildDirectoryLoader, firstItem);
+               await builderLoader.LoadTargetDependancies(buildDirectoryLoader, firstItem);
             }
         }
 
@@ -150,9 +47,8 @@ public class Build
     /// <summary>
     /// Is a build required for the current buildDirectories required.
     /// </summary>
-    /// <param name="changes">I list for files changed as reported by Git</param>
-    /// <param name="buildIDirectories">A dictionary where the Key is the parent and the item is one of its dependencies.
-    /// The actual build directory will have a RepositoryTarget with a directory of TARGET</param>
+    /// <param name="changes">A list of files changed as reported by Git</param>
+    /// <param name="buildIDirectories">A dictionary where the key is the dependency directory and the object is the build directory information for that directory </param>
     /// <returns></returns>
     public static ShouldBuild IsRequired(
         ISet<string> changes,

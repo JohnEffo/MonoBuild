@@ -8,10 +8,13 @@ params RepositoryTarget[] Parents );
 
 public record DirectoryLoadResult(
     Collection<Glob> IgnoreGlobs,
-    Collection<DependancyLocation> Targets);
+    Collection<DependencyLocation> Targets);
 
-public record DependancyLocation(
-    string RepositoryLocation);
+public record DependencyLocation(
+    string RepositoryLocation)
+{
+    public static implicit operator DependencyLocation(string location )=> new(location);
+}
 
 
 public record Glob(

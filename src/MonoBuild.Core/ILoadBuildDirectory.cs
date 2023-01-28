@@ -2,7 +2,7 @@
 
 public interface ILoadBuildDirectory
 {
-    DirectoryLoadResult Load(
+    Task<DirectoryLoadResult> Load(
         AbsoluteTarget buildDirectory);
 
     
