@@ -2,7 +2,7 @@
 title= "Mono Build"
 chapter= false
 date= 2023-01-27T22:37:18Z
-draft= true
+draft= false
 +++
 
 # MonoBuild
