@@ -28,7 +28,7 @@ public class Changes
             return result;
             
         }
-        catch (Exception e)
+        catch (Exception )
         {
             return Result.Fail($"No repository exists at {repository}");
         }

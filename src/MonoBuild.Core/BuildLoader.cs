@@ -16,7 +16,7 @@ internal class BuildLoader
         Path = new DependencyList();
         Result = new Dictionary<RepositoryTarget, BuildDirectoryConstruction>();
         _buildFor = target;
-        DependancyStack.Push(new ParentChild[] { new ParentChild(Build.TARGET, target.BuildDirectory) });
+        DependancyStack.Push(new ParentChild[] { new ParentChild(Build.TARGET, target.BuildDirectory.GetRepositoryBasedNameFor(".")) });
     }
 
     public bool TargetSeenBefore(

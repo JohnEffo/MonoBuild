@@ -475,3 +475,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+/src/MonoBuild.CLI/Properties/launchSettings.json

@@ -1,7 +1,10 @@
 ﻿namespace MonoBuild.Core;
 
-public enum ShouldBuild
+public abstract record ShouldBuild
 {
-    Yes,
-    No
+    public record No() : ShouldBuild;
+
+    public record Yes(
+        IEnumerable<string> filesCausingBuild):ShouldBuild;
+    
 }

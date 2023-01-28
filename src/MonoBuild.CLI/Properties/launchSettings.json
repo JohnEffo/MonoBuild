@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MonoBuild.CLI": {
-      "commandName": "Project",
-      "commandLineArgs": "-r yabber -t src\\"
-    }
-  }
-}

@@ -1,8 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.CommandLine;
+﻿using System.CommandLine;
 using FluentResults;
 using MonoBuild.Core;
-using FluentResults.Extensions;
+using System.Text;
 
 public class Program
 {
@@ -17,41 +16,72 @@ public class Program
         repositoryOption.AddAlias("-r");
 
         var targetOption =
-            new Option<DirectoryInfo>("--target", "The target directory containing the project to be built");
+            new Option<string>("--target", "The target directory containing the project to be built");
         targetOption.IsRequired = true;
         targetOption.AddAlias("-t");
 
+        var quietOption = new Option<YesNo>("--quiet",() => YesNo.No, 
+            "Mono build will always write <YES> or <NO> to the terminal to indicate whether a build is required, if --quiet is set to Yes then debug information is also output if a build is required.");
+        quietOption.IsRequired = false;
+        quietOption.AddAlias("-q");
 
         var rootCommand =
             new RootCommand("Mono repo decide if a build needs to happen for a directory of a mono");
         rootCommand.AddOption(repositoryOption);
         rootCommand.AddOption(targetOption);
+        rootCommand.AddOption(quietOption);
 
-        rootCommand.SetHandler((
+        rootCommand.SetHandler(async (
             repository,
-            file) =>
+            buildDirectory,
+            quiet,
+            fileLoader) =>
         {
-            Console.WriteLine($"Execution repository is {repository}");
-            var buildsRequired = Changes
-                .GetChanges(repository.FullName)
-                .Bind(changes =>  Result.Ok() );
+            var buildsRequired = await GatherBuildInformationData(buildDirectory, repository, fileLoader);
+
             if (buildsRequired.IsFailed)
             {
-                Console.WriteLine($"Failed: {buildsRequired.Errors.First().Message}");
-
+                Console.WriteLine($"{buildsRequired.Errors.First()}{Environment.NewLine}" );
             }
-
-        }, repositoryOption, targetOption);
+            else
+            {
+                var changeInformation = buildsRequired.Value;
+                var result = Build.IsRequired(changeInformation.Changes, changeInformation.Builds!) switch
+                {
+                     ShouldBuild.No _ => "<NO>",
+                     ShouldBuild.Yes yes => BuildYes(yes.filesCausingBuild, quiet)
+                };
+                Console.WriteLine(result);
+            }
+        }, repositoryOption, targetOption,quietOption , new LoadDirectoryBinder());
 
         return await rootCommand.InvokeAsync(args);
     }
 
+    private static string BuildYes(
+        IEnumerable<string> filesCausingBuild,
+        YesNo quiet)
+    {
+        var result = new StringBuilder();
+        if (quiet == YesNo.No)
+        {
+            result.Append("The following files changed:").AppendLine();
+            filesCausingBuild.Aggregate(result, (
+                builder,
+                change) => builder.Append(change).AppendLine());
+        }
+        return result.AppendLine("<YES>").ToString();
+    }
+
+    private static async Task<Result<BuildDecisionInformation>> GatherBuildInformationData(
+        string buildDirectory,
+        DirectoryInfo repository,
+        ILoadBuildDirectory fileLoader)
+    {
+        var absoluteTarget = new AbsoluteTarget(buildDirectory, repository.FullName);
+        var buildsRequired = await Changes
+            .GetChanges(repository.FullName)
+            .Bind(changes => new BuildDecisionInformation(changes).LoadBuilDetails(fileLoader, absoluteTarget));
+        return buildsRequired;
+    }
 }
-
-//Load Depenancfcies for build dir
-//Load Ignoresfor build file
-//ForEach Dependancy in dependancie
-   //LoadDependancies and build
-
-
-

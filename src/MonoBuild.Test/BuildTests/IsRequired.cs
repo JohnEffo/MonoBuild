@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using FluentResults;
 
 namespace MonoBuild.Test.BuildTests;
 
@@ -19,7 +20,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.No);
+        build.Should().BeOfType<ShouldBuild.No>();
     }
 
     [Fact]
@@ -37,7 +38,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().BeOfType<ShouldBuild.Yes>();
     }
 
     [Fact]
@@ -55,7 +56,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().BeOfType<ShouldBuild.Yes>();
     }
 
     [Theory]
@@ -77,7 +78,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes, reason);
+        build.Should().BeOfType<ShouldBuild.Yes>(reason);
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.No);
+        build.Should().BeOfType<ShouldBuild.No>();
     }
 
     [Fact]
@@ -115,7 +116,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.No);
+        build.Should().BeOfType<ShouldBuild.No>();
     }
 
     [Fact]
@@ -142,7 +143,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.No);
+        build.Should().BeOfType<ShouldBuild.No>();
     }
 
     [Fact]
@@ -171,7 +172,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().BeOfType<ShouldBuild.Yes>();
     }
 
     [Fact]
@@ -201,7 +202,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().BeOfType<ShouldBuild.Yes>();
     }
 
     [Fact]
@@ -235,7 +236,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().BeOfType<ShouldBuild.Yes>();
     }
 
 
@@ -270,7 +271,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.No);
+        build.Should().BeOfType<ShouldBuild.No>();
     }
     
 }

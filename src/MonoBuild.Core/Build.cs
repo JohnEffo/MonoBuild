@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.FileSystemGlobbing;
+﻿using System.Text;
+using FluentResults;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace MonoBuild.Core;
 
@@ -9,6 +11,8 @@ public record ParentChild(
     public ParentChild MakeChild(
         RepositoryTarget child) => new(this.Child, child);
 }
+
+
 
 public class Build
 {
@@ -42,8 +46,6 @@ public class Build
     }
 
 
-
-
     /// <summary>
     /// Is a build required for the current buildDirectories required.
     /// </summary>
@@ -57,24 +59,25 @@ public class Build
         var changesInADependantDirectory =RemoveAnyChangesNotInBuildDependancyList(changes, buildIDirectories.Select(kv => kv.Key.Directory).ToHashSet());
         if (!changesInADependantDirectory.Any())
         {
-            return ShouldBuild.No;
+            return new ShouldBuild.No();
         }
 
         var changesNotRemovedByLocalExclusions =
             GetChangesNotRemovedByLocalExclusions(changesInADependantDirectory, buildIDirectories);
         if (!changesNotRemovedByLocalExclusions.Any())
         {
-            return ShouldBuild.No;
+            return new ShouldBuild.No();
         }
 
         var changesNotRemovedByTransitiveExclusions =
             RemoveChangesRemovedByEveryParentOfDependancy(changesNotRemovedByLocalExclusions, buildIDirectories);
         if (!changesNotRemovedByTransitiveExclusions.Any())
         {
-            return ShouldBuild.No;
+            return new ShouldBuild.No();
         }
-        return ShouldBuild.Yes;
+        return new ShouldBuild.Yes(changesNotRemovedByTransitiveExclusions);
     }
+
 
     /// <summary>
     /// If a file in a dependency has changed but it is ignored by every one of its immediate parents,

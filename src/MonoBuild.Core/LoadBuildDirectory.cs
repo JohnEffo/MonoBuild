@@ -17,10 +17,13 @@ public class LoadBuildDirectory:ILoadBuildDirectory
         _ignoreExtractor = ignoreExtractor;
         _fileSystem = fileSystem;
     }
+
+
     public async Task<DirectoryLoadResult> Load(
         AbsoluteTarget buildDirectory)
     { 
         AssertPathExists(buildDirectory);
+        Environment.CurrentDirectory = buildDirectory.Repository.Directory;
         Collection<DependencyLocation> targets = await RetrieveTargets(buildDirectory);
         Collection<Glob> ignores = await RetrieveIgnores(buildDirectory);
         return new DirectoryLoadResult(ignores, targets);
