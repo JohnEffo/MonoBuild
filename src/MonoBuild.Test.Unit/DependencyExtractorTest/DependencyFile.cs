@@ -8,7 +8,7 @@ public class DependencyFile
         "# Local dependancy\r\n*.md\r\n# Relative dependancy directory\r\n../Tests/\r\n# Relative dependancy directory windows\r\n..\\Busines\\Logic\\\r\n# Relative dependancy file\r\n../Business/Magic/Magic.csproj";
 
     public const string JunkInJunkOut = "badger\rdoger\rrover lives in a car";
-public const string EmptyLines = "\rdoger\r\r";
+    private const string EmptyLines = "\rdoger\r\r";
 
     [Fact]
     public void Can_process_valid_dependency_file()
@@ -40,10 +40,9 @@ public const string EmptyLines = "\rdoger\r\r";
     
     }
 
-[Fact]
+    [Fact]
     public void Empty_lines_are_dropped()
     {
-
         //Arrange
         DepsFileExtractor sut = new DepsFileExtractor();
 
@@ -53,6 +52,5 @@ public const string EmptyLines = "\rdoger\r\r";
         //Act
         result.Should().BeEquivalentTo(new Collection<string>
             { "doger" });
-    
     }
 }

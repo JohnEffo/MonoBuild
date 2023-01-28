@@ -59,13 +59,15 @@ public class IsRequired
         build.Should().Be(ShouldBuild.Yes);
     }
 
-    [Fact]
-    public void Given_file_changed_in_dependency_of_build_directory_And_file_type_not_ignored_When_Test_Then_build_required()
+    [Theory]
+    [InlineData("/somefile.cs","file in main directory of dependency")]
+    [InlineData("/Subdirectory/somefile.cs","file in main sub-directory of dependency")]
+    public void Given_file_changed_in_dependency_of_build_directory_And_file_type_not_ignored_When_Test_Then_build_required(string fileName,string reason)
     {
         //Given
         RepositoryTarget buildDirectory = "src/builddir";
         RepositoryTarget dependencyDirectory = "src/dependency";
-        ISet<string> changes = new HashSet<string> { $"{dependencyDirectory.Directory}/somefile.cs" };
+        ISet<string> changes = new HashSet<string> { $"{dependencyDirectory.Directory}/{fileName}" };
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
         {
             {buildDirectory,new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>(),Build.TARGET)},
@@ -76,7 +78,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().Be(ShouldBuild.Yes);
+        build.Should().Be(ShouldBuild.Yes, reason);
     }
 
     [Fact]
@@ -142,6 +144,35 @@ public class IsRequired
 
         //When
         build.Should().Be(ShouldBuild.No);
+    }
+
+    [Fact]
+    public void Given_file_changed_in_dependency_of_build_directory_And_all_files_ignored_using_relative_glob_in_build_directory_But_subdirectory_containing_changed_file_is_also_a_dependency_When_Test_Then_build_required()
+    {
+        //Given
+        RepositoryTarget buildDirectory = "src/builddir";
+        var dependencySubdirectory = "dependency";
+        RepositoryTarget dependencyDirectory = $"src/{dependencySubdirectory}";
+        RepositoryTarget dependencyDirectoryAPI = $"{dependencyDirectory}/API";
+        ISet<string> changes = new HashSet<string> { $"{dependencyDirectoryAPI.Directory}/somefile.md" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            {
+                buildDirectory, new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>
+                {
+                    IgnoreGlob.Construct($"../{dependencySubdirectory}/**/*.md", buildDirectory,
+                        new Collection<RepositoryTarget> { dependencyDirectory })
+                }, Build.TARGET)
+            },
+            { dependencyDirectory, new BuildDirectory(dependencyDirectory,new Collection<IgnoreGlob>(), buildDirectory) },
+            {dependencyDirectoryAPI,new BuildDirectory(dependencyDirectoryAPI,new Collection<IgnoreGlob>(),buildDirectory)}
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //When
+        build.Should().Be(ShouldBuild.Yes);
     }
 
     [Fact]
