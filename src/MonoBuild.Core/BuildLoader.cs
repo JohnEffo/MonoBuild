@@ -28,6 +28,7 @@ internal class BuildLoader
     {
         var buildPage = Result[parentChild.Child];
         buildPage.AddParent(parentChild.Parent);
+        Path.DependancyFinished();
     }
 
     public bool BuildDirectoriesLeftToProcess([MaybeNullWhen(false)] out ParentChild[] items)

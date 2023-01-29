@@ -18,7 +18,7 @@ public class Changes
             {
                 var diff = repo.Diff.Compare<TreeChanges>(parent, tip);
                 var modifications = new Collection<IEnumerable<TreeEntryChanges>>
-                    { diff.Modified, diff.Added, diff.Deleted };
+                    { diff.Modified, diff.Added, diff.Deleted, diff.Renamed };
                 modifications
                     .SelectMany(m => m.Select(p => p.Path))
                     .Aggregate(result, AddPath);

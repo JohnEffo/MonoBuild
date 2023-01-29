@@ -147,6 +147,37 @@ public class IsRequired
     }
 
     [Fact]
+    public void Given_file_changed_in_dependency_of_dependancy_of_build_directory_And_file_type_ignored_using_relative_glob_in_build_directory_When_Test_Then_no_build_required()
+    {
+        //Given
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
+        var initialDependency = "dependency";
+        RepositoryTarget dependencyDirectory = new RepositoryTarget($"src/{initialDependency}");
+        var transitiveDependency = "transitive";
+        RepositoryTarget transativeDirectory = new RepositoryTarget($"src/{transitiveDependency}");
+        ISet<string> changes = new HashSet<string> { $"{transativeDirectory.Directory}/somefile.md" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            {
+                buildDirectory, new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>
+                {
+                    IgnoreGlob.Construct(new Glob($"../{transitiveDependency}/**/*.md"), buildDirectory,
+                        new Collection<RepositoryTarget> { dependencyDirectory ,transativeDirectory})
+                }, new RepositoryTarget(Build.TARGET))
+            },
+            { dependencyDirectory, new BuildDirectory(dependencyDirectory,new Collection<IgnoreGlob>(), buildDirectory) },
+            { transativeDirectory, new BuildDirectory(transativeDirectory,new Collection<IgnoreGlob>(), dependencyDirectory,buildDirectory) }
+
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //When
+        build.Should().BeOfType<ShouldBuild.No>();
+    }
+
+    [Fact]
     public void Given_file_changed_in_dependency_of_build_directory_And_all_files_ignored_using_relative_glob_in_build_directory_But_subdirectory_containing_changed_file_is_also_a_dependency_When_Test_Then_build_required()
     {
         //Given

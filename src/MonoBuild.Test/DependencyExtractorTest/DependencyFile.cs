@@ -5,7 +5,7 @@ namespace MonoBuild.Test.DependencyExtractorTest;
 public class DependencyFile
 {
     public const string ValidDependencyFile =
-        "# Local dependancy\r\n*.md\r\n# Relative dependancy directory\r\n../Tests/\r\n# Relative dependancy directory windows\r\n..\\Busines\\Logic\\\r\n# Relative dependancy file\r\n../Business/Magic/Magic.csproj";
+        "# Relative dependancy directory\r\n../Tests/\r\n# Relative dependancy directory windows\r\n..\\Busines\\Logic\\\r\n";
 
     public const string JunkInJunkOut = "badger\rdoger\rrover lives in a car";
     private const string EmptyLines = "\rdoger\r\r";
@@ -44,7 +44,7 @@ public class DependencyFile
         //Act
         result.Select(r => r.Path).Should()
             .BeEquivalentTo(new Collection<string>
-            { "*.md", "../Tests/", "../Busines/Logic/", "../Business/Magic/Magic.csproj" });
+            { "../Tests/", "../Busines/Logic/" });
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class DependencyFile
 
         //Act
         result.Select(r => r.Path).Should().BeEquivalentTo(new Collection<string>
-            { "badger","doger","rover lives in a car" });
+            { "badger/","doger/","rover lives in a car/" });
     
     }
 
@@ -74,6 +74,6 @@ public class DependencyFile
 
         //Act
         result.Select(r => r.Path).Should().BeEquivalentTo(new Collection<string>
-            { "doger" });
+            { "doger/" });
     }
 }

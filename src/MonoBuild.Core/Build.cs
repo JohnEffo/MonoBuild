@@ -14,9 +14,9 @@ public record ParentChild(
         var childRepository = Child.GetRepositoryBasedNameFor(child.Path);
         return child.SelfParent switch
         {
-            true => new(new RepositoryTarget(childRepository), new RepositoryTarget(childRepository) ),
+            true => new(new RepositoryTarget(childRepository), new RepositoryTarget(childRepository)),
             _ => new(this.Child, new RepositoryTarget(childRepository)),
-        }; 
+        };
     }
 }
 
@@ -76,8 +76,17 @@ public class Build
             return new ShouldBuild.No();
         }
 
+        var targetBuildDirectory = buildIDirectories.First(bd => bd.Value.Parents.First().Directory == TARGET).Value;
+        var notRemovedByTargetRelativeExclusions =
+            GetChangesNotRemovedByBuildDirectoryRelativeExclusions(changesNotRemovedByLocalExclusions,
+                targetBuildDirectory);
+        if (!notRemovedByTargetRelativeExclusions.Any())
+        {
+            return new ShouldBuild.No();
+        }
+
         var changesNotRemovedByTransitiveExclusions =
-            RemoveChangesRemovedByEveryParentOfDependancy(changesNotRemovedByLocalExclusions, buildIDirectories);
+            RemoveChangesRemovedByEveryParentOfDependancy(notRemovedByTargetRelativeExclusions, buildIDirectories);
         if (!changesNotRemovedByTransitiveExclusions.Any())
         {
             return new ShouldBuild.No();
@@ -85,6 +94,13 @@ public class Build
 
         return new ShouldBuild.Yes(changesNotRemovedByTransitiveExclusions);
     }
+
+    private static ISet<string> GetChangesNotRemovedByBuildDirectoryRelativeExclusions(
+        ISet<string> changesNotRemovedByLocalExclusions,
+        BuildDirectory buildDirectory)
+        => changesNotRemovedByLocalExclusions
+            .Where(change => !FileExcludedByDirectory(change, buildDirectory))
+            .ToHashSet();
 
 
     /// <summary>
@@ -125,10 +141,11 @@ public class Build
             return false;
         }
 
-        return parentWhichCouldHaveExlusions.All(parent => FileExcludedByParent(fileName, buildDirectoryMap[parent]));
+        return parentWhichCouldHaveExlusions.All(parent =>
+            FileExcludedByDirectory(fileName, buildDirectoryMap[parent]));
     }
 
-    private static bool FileExcludedByParent(
+    private static bool FileExcludedByDirectory(
         string fileName,
         BuildDirectory buildDirectory)
     {
