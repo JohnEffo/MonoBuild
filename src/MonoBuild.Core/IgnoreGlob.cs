@@ -40,8 +40,8 @@ public abstract record IgnoreGlob(Glob Glob)
         Glob glob)
     {
         var lastDir = dependencyPattern.Split("/").Last();
-        return new StringBuilder(dependencyPattern)
-            .Append(glob.Pattern.Split(lastDir).LastOrDefault() ?? "").ToString();
+        return new Glob( new StringBuilder(dependencyPattern)
+            .Append(glob.Pattern.Split(lastDir).LastOrDefault() ?? "").ToString());
     }
 
     public record Local(

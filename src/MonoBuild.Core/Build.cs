@@ -9,7 +9,15 @@ public record ParentChild(
     RepositoryTarget Child)
 {
     public ParentChild MakeChild(
-        RepositoryTarget child) => new(this.Child, child);
+        DependencyLocation child)
+    {
+        var childRepository = Child.GetRepositoryBasedNameFor(child.Path);
+        return child.SelfParent switch
+        {
+            true => new(new RepositoryTarget(childRepository), new RepositoryTarget(childRepository) ),
+            _ => new(this.Child, new RepositoryTarget(childRepository)),
+        }; 
+    }
 }
 
 public class Build
@@ -110,7 +118,7 @@ public class Build
     {
         var parentWhichCouldHaveExlusions = buildDirectories
             .SelectMany(buidDir => buildDirectoryMap[buidDir].Parents)
-            .Where(parent => parent != TARGET)
+            .Where(parent => parent.Directory != TARGET)
             .ToList();
         if (!parentWhichCouldHaveExlusions.Any())
         {

@@ -78,7 +78,7 @@ public class Program
         DirectoryInfo repository,
         ILoadBuildDirectory fileLoader)
     {
-        var absoluteTarget = new AbsoluteTarget(buildDirectory, repository.FullName);
+        var absoluteTarget = new AbsoluteTarget(new RepositoryTarget(buildDirectory) , new GitRepository(repository.FullName) );
         var buildsRequired = await Changes
             .GetChanges(repository.FullName)
             .Bind(changes => new BuildDecisionInformation(changes).LoadBuilDetails(fileLoader, absoluteTarget));

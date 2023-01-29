@@ -8,10 +8,10 @@ public class IgnoreGlobTests
     public void Can_make_local_glob()
     {
         //Arrange
-        RepositoryTarget currentBuildDirectory = "src/buildDir";
+        RepositoryTarget currentBuildDirectory = new RepositoryTarget("src/buildDir");
         var expectedGlob = "*.txt";
         //Act
-        var result = IgnoreGlob.Construct(expectedGlob, currentBuildDirectory, new Collection<RepositoryTarget>()) as IgnoreGlob.Local;
+        var result = IgnoreGlob.Construct(new Glob(expectedGlob), currentBuildDirectory, new Collection<RepositoryTarget>()) as IgnoreGlob.Local;
 
         //Assert
         result.Glob.Pattern.Should().Be(expectedGlob);
@@ -28,11 +28,11 @@ public class IgnoreGlobTests
     public void Can_ignore_files_which_are_part_of_another_dependency(string globEnd, string description)
     { 
         //Arrange
-        RepositoryTarget currentBuildDirectory = "src/buildDir";
-        var dependencies = new Collection<RepositoryTarget> { "src/otherBuildDir" };
+        RepositoryTarget currentBuildDirectory = new RepositoryTarget("src/buildDir");
+        var dependencies = new Collection<RepositoryTarget> { new RepositoryTarget("src/otherBuildDir") };
         
         //Act
-        var result = IgnoreGlob.Construct($"../otherBuildDir/.iac/{globEnd}", currentBuildDirectory, dependencies) as IgnoreGlob.Relative;
+        var result = IgnoreGlob.Construct(new Glob($"../otherBuildDir/.iac/{globEnd}"), currentBuildDirectory, dependencies) as IgnoreGlob.Relative;
 
         //Assert
         result.Target.Directory.Should().Be("src/otherBuildDir");
@@ -44,11 +44,11 @@ public class IgnoreGlobTests
     public void Cannot_ignore_files_which_are_not_part_of_another_dependency()
     {
         //Arrange
-        RepositoryTarget currentBuildDirectory = "src/buildDir";
-        var dependencies = new Collection<RepositoryTarget> { "src/otherBuildDir" };
+        RepositoryTarget currentBuildDirectory = new RepositoryTarget("src/buildDir");
+        var dependencies = new Collection<RepositoryTarget> { new RepositoryTarget("src/otherBuildDir") };
 
         //Act
-        Action execution =()=>  IgnoreGlob.Construct("../thirdDependnance/.iac/*", currentBuildDirectory, dependencies);
+        Action execution =()=>  IgnoreGlob.Construct(new Glob("../thirdDependnance/.iac/*"), currentBuildDirectory, dependencies);
 
         //Assert
         execution.Should().Throw<ArgumentException>();

@@ -18,10 +18,10 @@ public class Load
     public async Task Can_construct_for_build_with_no_dependencies()
     {
         //Arrange
-        RepositoryTarget buildDirectory = "src/MonoPro";
-        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, "C:/TestRepository");
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/MonoPro");
+        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, new GitRepository("C:/TestRepository"));
         _loadDirectoryMock.Setup(ld => ld.Load(It.IsAny<AbsoluteTarget>())).ReturnsAsync(new DirectoryLoadResult(
-            new Collection<Glob> { "*.md", "*.doc" },
+            new Collection<Glob> { new("*.md"), new("*.doc") },
             new Collection<DependencyLocation>()
         ));
 
@@ -33,7 +33,7 @@ public class Load
         {
             {
                 buildDirectory,
-                new BuildDirectory(buildDirectory, buildDirectory.IgnoreLocalFilesOfType("*.md", "*.doc"), Build.TARGET)
+                new BuildDirectory(buildDirectory, buildDirectory.IgnoreLocalFilesOfType("*.md", "*.doc"), new RepositoryTarget(Build.TARGET))
             }
         };
         result.Should().BeEquivalentTo(expected);
@@ -48,9 +48,9 @@ public class Load
         string reason)
     {
         //Arrange
-        RepositoryTarget buildDirectory = "src/MonoPro";
+        RepositoryTarget buildDirectory = new("src/MonoPro");
         string dependencyTarget = $"../MonoPro.Test/{dependencyName}";
-        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, "C:/TestRepository");
+        AbsoluteTarget target = new AbsoluteTarget(buildDirectory,new GitRepository("C:/TestRepository") );
         _loadDirectoryMock.SetupSequence(ld => ld.Load(It.IsAny<AbsoluteTarget>()))
             .ReturnsAsync(LocatedDependencies(dependencyTarget)).ReturnsAsync(EmptyDependency());
 
@@ -58,13 +58,13 @@ public class Load
         var result = await Build.LoadAsync(_loadDirectoryMock.Object, target);
 
         //Assert 
-        var dependencyRepositoryTarget = "src/MonoPro.Test";
+        var dependencyRepositoryTarget = new RepositoryTarget("src/MonoPro.Test");
         var markdownAndDocumentExclusions = buildDirectory.IgnoreLocalFilesOfType("*.md", "*.doc");
         var expected = new Dictionary<RepositoryTarget, BuildDirectory>
         {
             {
                 buildDirectory,
-                new BuildDirectory(buildDirectory, markdownAndDocumentExclusions, Build.TARGET)
+                new BuildDirectory(buildDirectory, markdownAndDocumentExclusions, new RepositoryTarget(Build.TARGET))
             },
             {
                 dependencyRepositoryTarget,
@@ -78,10 +78,10 @@ public class Load
     public async Task Can_load_multiple_dependencies_for_a_given_file()
     {
         //Arrange
-        RepositoryTarget buildDirectory = "src/MonoPro";
+        RepositoryTarget buildDirectory = new("src/MonoPro");
         string dependencyTarget1 = $"../MonoPro.Test/";
         string dependencytarget2 = "../MonoPro.Core/";
-        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, "C:/TestRepository");
+        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, new GitRepository("C:/TestRepository"));
         _loadDirectoryMock.SetupSequence(ld => ld.Load(It.IsAny<AbsoluteTarget>()))
             .ReturnsAsync(LocatedDependencies(dependencyTarget1, dependencytarget2)).ReturnsAsync(EmptyDependency())
             .ReturnsAsync(EmptyDependency());
@@ -90,14 +90,14 @@ public class Load
         var result = await Build.LoadAsync(_loadDirectoryMock.Object, target);
 
         //Assert 
-        var dependencyRepositoryTarget1 = "src/MonoPro.Test";
-        var dependencyRepositoryTarget2 = "src/MonoPro.Core";
+        var dependencyRepositoryTarget1 = new RepositoryTarget("src/MonoPro.Test") ;
+        var dependencyRepositoryTarget2 = new RepositoryTarget("src/MonoPro.Core") ;
         var markdownAndDocumentExclusions = buildDirectory.IgnoreLocalFilesOfType("*.md", "*.doc");
         var expected = new Dictionary<RepositoryTarget, BuildDirectory>
         {
             {
                 buildDirectory,
-                new BuildDirectory(buildDirectory, markdownAndDocumentExclusions, Build.TARGET)
+                new BuildDirectory(buildDirectory, markdownAndDocumentExclusions, new RepositoryTarget(Build.TARGET))
             },
             {
                 dependencyRepositoryTarget1,
@@ -115,8 +115,8 @@ public class Load
     public async Task Cannot_load_build_with_a_circular_dependency()
     {
         //Arrange
-        RepositoryTarget buildDirectory = "src/MonoPro";
-        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, "C:/TestRepository");
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/MonoPro");
+        AbsoluteTarget target = new AbsoluteTarget(buildDirectory, new GitRepository("C:/TestRepository"));
 
         _loadDirectoryMock.SetupSequence(ld => ld.Load(It.IsAny<AbsoluteTarget>()))
             .ReturnsAsync(LocatedDependencies("../DependancyA/")).ReturnsAsync(LocatedDependencies("../DependencyB/"))
@@ -138,7 +138,7 @@ public class Load
         var loadDirectory =
             new LoadBuildDirectory(
                 new Collection<IDependencyExtractor> { new DepsFileExtractor(), new ProjDependencyExtractor("*.csproj") },
-                new DepsFileExtractor(), fileSystem);
+                MonoBuildFileLines.Process, fileSystem);
 
         //Act
         var results = await Build.LoadAsync(loadDirectory, target);
@@ -178,14 +178,14 @@ public class Load
             },
         };
         IFileSystem fileSystem = new MockFileSystem(mockFileData);
-        return (fileSystem, new AbsoluteTarget(buildDirectory, repositoryDirectory));
+        return (fileSystem, new AbsoluteTarget(new RepositoryTarget(buildDirectory) , new GitRepository(repositoryDirectory )));
     }
 
 
     private static DirectoryLoadResult EmptyDependency()
     {
         return new DirectoryLoadResult(
-            new Collection<Glob> { "*.md", "*.doc" },
+            new Collection<Glob> { new("*.md"), new("*.doc") },
             new Collection<DependencyLocation>()
         );
     }
@@ -196,7 +196,7 @@ public class Load
         var dependencyCollection =
             new Collection<DependencyLocation>(dependancies.Select(target => new DependencyLocation(target)).ToList());
         return new DirectoryLoadResult(
-            new Collection<Glob> { "*.md", "*.doc" },
+            new Collection<Glob> { new("*.md"), new("*.doc") },
             dependencyCollection
         );
     }

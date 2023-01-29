@@ -4,7 +4,7 @@ namespace MonoBuild.Core;
 
 public interface IDependencyExtractor
 {
-    IEnumerable<string> GetDependencyFor(
+    IEnumerable<DependencyLocation> GetDependencyFor(
         string dependencyBlob);
 
     string SearchPattern { get; }

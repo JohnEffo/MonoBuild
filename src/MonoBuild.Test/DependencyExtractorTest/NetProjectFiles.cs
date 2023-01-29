@@ -26,7 +26,11 @@ public class NetProjectFiles
         var result = sut.GetDependencyFor(ValidProjectFileWithDependencyCSharp);
 
         //Assert
-        result.Should().BeEquivalentTo(new Collection<string> { "../MonoBuild.Core/MonoBuild.Core.csproj" });
+        result
+            .Select(r => r.Path)
+            .Should().BeEquivalentTo(new Collection<string> { "../MonoBuild.Core/MonoBuild.Core.csproj" });
+        result
+            .Select(r => r.SelfParent).Should().AllSatisfy(selfparent => selfparent.Should().BeFalse());
     }
 
     [Fact]
@@ -39,7 +43,10 @@ public class NetProjectFiles
         var result = sut.GetDependencyFor(ValidProjectFileFSharp);
 
         //Assert
-        result.Should().BeEquivalentTo(new Collection<string> { "../../src/FsCheck.Xunit/FsCheck.Xunit.fsproj", "../FsCheck.Test.CSharp/FsCheck.Test.CSharp.csproj" });
+        result
+            .Select(r => r.Path)
+            .Should()
+            .BeEquivalentTo(new Collection<string> { "../../src/FsCheck.Xunit/FsCheck.Xunit.fsproj", "../FsCheck.Test.CSharp/FsCheck.Test.CSharp.csproj" });
     }
 
     [Fact]
@@ -52,7 +59,7 @@ public class NetProjectFiles
         var result = sut.GetDependencyFor(ValidProjectFileNoDependancies);
 
         //Assert
-        result.Should().BeEquivalentTo(new Collection<string> {  });
+        result.Select(r => r.Path).Should().BeEquivalentTo(new Collection<string> {  });
     }
 
 }

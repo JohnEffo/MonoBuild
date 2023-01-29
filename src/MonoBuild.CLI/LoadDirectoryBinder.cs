@@ -12,6 +12,6 @@ public class LoadDirectoryBinder : BinderBase<ILoadBuildDirectory>
         {
             new ProjDependencyExtractor("*.csproj"), new ProjDependencyExtractor("*.fsproj"), new DepsFileExtractor()
         };
-        return new LoadBuildDirectory(extractores, new DepsFileExtractor(), new FileSystem());
+        return new LoadBuildDirectory(extractores, MonoBuildFileLines.Process, new FileSystem());
     }
 }

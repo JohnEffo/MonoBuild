@@ -10,18 +10,18 @@ public record DirectoryLoadResult(
     Collection<Glob> IgnoreGlobs,
     Collection<DependencyLocation> Targets);
 
+/// <summary>
+/// A file or directory which pointing to a dependency
+/// </summary>
+/// <param name="Path">The path to the dependency</param>
+/// <param name="SelfParent">If a dependency self parents then it's parent cannot be checked to see if it has a relative ignore glob </param>
 public record DependencyLocation(
-    string RepositoryLocation)
-{
-    public static implicit operator DependencyLocation(string location )=> new(location);
-}
-
+    string Path,
+    bool SelfParent = false);
 
 public record Glob(
-    string Pattern)
-{
-    public static implicit operator Glob(string globPattern)=> new Glob(globPattern);
-};
+    string Pattern);
+
 
 /// <summary>
 /// The repository relative directory of the build
@@ -30,9 +30,6 @@ public record Glob(
 public record RepositoryTarget(
     string Directory)
 {
-    public static implicit operator RepositoryTarget(
-        string Directory) => new RepositoryTarget(Directory);
-
     public string GetRepositoryBasedNameFor(
         string path)
     {
@@ -64,8 +61,4 @@ public record AbsoluteTarget(
 /// </summary>
 /// <param name="Directory">The absolute directory of the repository</param>
 public record GitRepository(
-    string Directory)
-{
-    public static implicit operator GitRepository(
-        string Directory) => new GitRepository(Directory);
-}
+    string Directory);

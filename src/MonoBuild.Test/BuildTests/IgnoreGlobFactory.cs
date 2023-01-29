@@ -12,7 +12,7 @@ public static class IgnoreGlobFactory
             globs,
             globPattern) =>
         {
-            globs.Add(IgnoreGlob.Construct(globPattern, buildDirectory, new Collection<RepositoryTarget>()));
+            globs.Add(IgnoreGlob.Construct(new Glob(globPattern), buildDirectory, new Collection<RepositoryTarget>()));
             return globs;
         });
     }

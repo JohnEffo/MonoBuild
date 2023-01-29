@@ -16,7 +16,7 @@ internal class BuildLoader
         Path = new DependencyList();
         Result = new Dictionary<RepositoryTarget, BuildDirectoryConstruction>();
         _buildFor = target;
-        DependancyStack.Push(new ParentChild[] { new ParentChild(Build.TARGET, target.BuildDirectory.GetRepositoryBasedNameFor(".")) });
+        DependancyStack.Push(new ParentChild[] { new ParentChild(new RepositoryTarget(Build.TARGET) , new(target.BuildDirectory.GetRepositoryBasedNameFor("."))) });
     }
 
     public bool TargetSeenBefore(
@@ -40,7 +40,7 @@ internal class BuildLoader
     {
         var currentBuild = await buildDirectoryLoader.Load(_buildFor with { BuildDirectory = item.Child });
         var children = GetRepositoryLocations(currentBuild.Targets, item.Child);
-        var parentChildren = children.Select(c => item.MakeChild(c.Directory)).ToArray();
+        var parentChildren = currentBuild.Targets.Select(item.MakeChild).ToArray();
         if (parentChildren.Any())
         {
             DependancyStack.Push(parentChildren);
@@ -57,7 +57,7 @@ internal class BuildLoader
         Collection<DependencyLocation> targets,
         RepositoryTarget parent)
         => targets
-            .Select(target => new RepositoryTarget(parent.GetRepositoryBasedNameFor(target.RepositoryLocation)))
+            .Select(target => new RepositoryTarget(parent.GetRepositoryBasedNameFor(target.Path)))
             .ToList();
 
     public ParentChild RetreiveFirstItemPushingAllOthersBackOnStack(ParentChild[] items)

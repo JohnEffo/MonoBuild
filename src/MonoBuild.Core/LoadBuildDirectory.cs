@@ -7,11 +7,11 @@ namespace MonoBuild.Core;
 public class LoadBuildDirectory:ILoadBuildDirectory
 {
     private readonly Collection<IDependencyExtractor> _extractors;
-    private readonly IDependencyExtractor _ignoreExtractor;
+    private readonly Func<string, IEnumerable<string>> _ignoreExtractor;
     private readonly IFileSystem _fileSystem;
     private const string Ignore = ".monobuild.ignore";
 
-    public LoadBuildDirectory(Collection<IDependencyExtractor> extractors, IDependencyExtractor ignoreExtractor,IFileSystem fileSystem)
+    public LoadBuildDirectory(Collection<IDependencyExtractor> extractors, Func<string,IEnumerable<string>> ignoreExtractor,IFileSystem fileSystem)
     {
         _extractors = extractors;
         _ignoreExtractor = ignoreExtractor;
@@ -23,7 +23,6 @@ public class LoadBuildDirectory:ILoadBuildDirectory
         AbsoluteTarget buildDirectory)
     { 
         AssertPathExists(buildDirectory);
-        Environment.CurrentDirectory = buildDirectory.Repository.Directory;
         Collection<DependencyLocation> targets = await RetrieveTargets(buildDirectory);
         Collection<Glob> ignores = await RetrieveIgnores(buildDirectory);
         return new DirectoryLoadResult(ignores, targets);
@@ -50,8 +49,7 @@ public class LoadBuildDirectory:ILoadBuildDirectory
             foreach (var dependencySourceFile in dependencySourceFiles)
             {
                 var fileContent = await _fileSystem.File.ReadAllTextAsync(dependencySourceFile);
-                var dependencies = dependencyExtractor.GetDependencyFor(fileContent)
-                    .Select(file => new DependencyLocation(file));
+                var dependencies = dependencyExtractor.GetDependencyFor(fileContent);
                 dependencies.Aggregate(result, AddItem);
             }
         }
@@ -73,7 +71,7 @@ public class LoadBuildDirectory:ILoadBuildDirectory
         if (_fileSystem.File.Exists(filePath))
         {
             var fileContents = await _fileSystem.File.ReadAllTextAsync(filePath);
-            var ignores = _ignoreExtractor.GetDependencyFor(fileContents).Select(ignore => new Glob(ignore));
+            var ignores = _ignoreExtractor(fileContents).Select(ignore => new Glob(ignore));
             return ignores.Aggregate(new Collection<Glob>(), AddItem);
         }
         return new Collection<Glob>();
