@@ -37,15 +37,15 @@ Using  MonoBuild without any configuration (assuming C#, F# project), if we comm
 >  Assuming monobuild is on your path
 
 ```Powershell
->monobuild -t "Service A" -q
+>monobuild -t "Service A" -q YES
 <YES>
->monobuild -t Site -q
+>monobuild -t Site -q YES
 <YES>
->monobuild -t Utilities -q
+>monobuild -t Utilities -q YES
 <NO>
->monobuild -t "Service B" -q
+>monobuild -t "Service B" -q YES
 <NO>
->monobuile -t Utilites -q
+>monobuile -t Utilites -q YES
 <NO>
 ```
 
