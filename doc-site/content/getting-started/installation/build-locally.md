@@ -5,19 +5,19 @@ draft: false
 weight: 6
 ---
 ### Prerequisites
-You will need to have 7 installed for instructions on how to do this: https://dotnet.microsoft.com/en-us/download
+You will need to have Dotnet 7 installed for instructions on how to do this: https://dotnet.microsoft.com/en-us/download
 
 
 ### Building 
 
 * Clone the repository
-```powershell
+```shell
 git clone https://github.com/JohnEffo/MonoBuild
 cd monobuild
 ```
 
 * Build the exe
-```
+```shell
 dotnet build
 ```
 

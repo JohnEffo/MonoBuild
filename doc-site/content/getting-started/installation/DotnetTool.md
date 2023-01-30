@@ -27,7 +27,7 @@ A local installation limits the tool to a particular directory.
 
 If you have not installed any Dotnet tools into your current directory you will need create a manifest with:
 
-```
+```shell
 dotnet new tool-manifest
 ```
 
