@@ -40,6 +40,10 @@ public class Build
             var firstItem = builderLoader.RetreiveFirstItemPushingAllOthersBackOnStack(items);
             if (builderLoader.TargetSeenBefore(firstItem.Child))
             {
+                if (items.Length == 1)
+                {
+                    builderLoader.DependancyFinished();
+                }
                 builderLoader.AddParentToChild(firstItem);
             }
             else

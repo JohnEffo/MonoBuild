@@ -31,6 +31,11 @@ internal class BuildLoader
         Path.DependancyFinished();
     }
 
+    public void DependancyFinished()
+    {
+        Path.DependancyFinished();
+    }
+
     public bool BuildDirectoriesLeftToProcess([MaybeNullWhen(false)] out ParentChild[] items)
         => DependancyStack.TryPop(out items);
 
