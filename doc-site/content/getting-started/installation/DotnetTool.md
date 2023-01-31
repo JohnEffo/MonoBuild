@@ -15,13 +15,14 @@ To install the tool globally:
 dotnet tool install -g monobuild
 ```
 
-This allows you to use the tool on on the command line by simply typing ```monobuild```.
+This allows you to use the tool on on the command line by simply typing ```monobuild```. More information on the installation and removal of Dotnet tools is available [here](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-use)
+
 
 ## Locally
 
 A local installation limits the tool to a particular directory. 
 
-* The advantage of this is that if the directory is a Git repository that means that the to tool configuration will travel with the repository.
+* The advantage of this is that if the directory is a Git repository that means that the to tool configuration will travel with the repository. Other members of the team (or the CI/CD process) can get access to all the tools installed in a repository by running ```dotnet tool restore``` more information on this is available [here](https://learn.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use).
 
 * The disadvantage of this, is that you need to type ```dotnet monobuild``` to execute the tool.
 

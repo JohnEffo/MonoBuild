@@ -16,7 +16,7 @@ For a solution with multiple deliverable services/packages we have two options, 
 
 Option one means that we have fine grain control on when deployments happen. When we want to deploy, we merge our changes to the deployment branch of the item we want to release. As the number of deployable items grow it becomes difficult to keep track of the what needs to be deployed for a given change, when you get to 20-30 interdependent services it can easily start to become unmanageable.
 
-With option two we don't have this problem; when ever we merge are change to the deployment branch every build we have configured will run. This is not ideal: our release cadence is limited to to the slowest build; all builds need to complete before the next release can occur so any failing builds become an issue holding up releases of other probably unrelated changes.
+With option two we don't have this problem; when ever we merge our change to the deployment branch every build we have configured will run. This is not ideal: our release cadence is limited to to the slowest build; all builds need to complete before the next release can occur so any failing builds become an issue holding up releases of other probably unrelated changes.
 
 MonoBuild aims to help solve issues with option two so that only the required builds for any given change set are triggered. This can speed up deployment frequency, reduce build times and compute requirements.
 
@@ -41,7 +41,7 @@ graph TD;
 
 Using  MonoBuild without any configuration (assuming C#, F# project), if we commit a change to a ```Service A API\MakePurchaseCommand.cs``` we can execute the following:
 
->  Assuming monobuild is on your path
+>  Assuming monobuild is on your path.
 
 ```Powershell
 >monobuild -t "Service A" -q YES
