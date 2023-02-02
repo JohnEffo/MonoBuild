@@ -21,7 +21,7 @@ public abstract record IgnoreGlob(Glob Glob)
         RepositoryTarget currentBuild,
         Collection<RepositoryTarget> dependancies)
     {
-        //Ensure relative globs have / not \ because the globing matcher produces matches with / as the path separator
+        //Ensure relative globs have / not \; because the globing matcher produces matches with / as the path separator
         var dir = Path.GetDirectoryName(Path.Combine(currentBuild.Directory, glob.Pattern))?.Replace("\\", "/");
         var dependencyPattern = new DirectoryInfo(dir).FullName.Replace("\\", "/").Replace(Environment.CurrentDirectory.Replace("\\", "/") + "/", "");
         var matchingDependency = dependancies.FirstOrDefault(dep => dependencyPattern.StartsWith(dep.Directory));

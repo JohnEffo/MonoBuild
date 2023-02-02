@@ -4,7 +4,12 @@ namespace MonoBuild.Core;
 
 public record BuildDirectory(RepositoryTarget Directory,
     IEnumerable<IgnoreGlob> IgnoredGlobs,
-params RepositoryTarget[] Parents );
+params RepositoryTarget[] Parents )
+{
+    public string RoutedName(
+        string globPattern)
+        => Path.Combine(Directory.Directory, globPattern).Replace("\\", "/");
+}
 
 public record DirectoryLoadResult(
     Collection<Glob> IgnoreGlobs,

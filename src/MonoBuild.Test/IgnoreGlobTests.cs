@@ -25,7 +25,7 @@ public class IgnoreGlobTests
     [InlineData("subdirectory/*.txt", "should handle any text in sub-directory")]
 
 
-    public void Can_ignore_files_which_are_part_of_another_dependency(string globEnd, string description)
+    public void Can_ignore_relative_files_which_are_part_of_another_dependency(string globEnd, string description)
     { 
         //Arrange
         RepositoryTarget currentBuildDirectory = new RepositoryTarget("src/buildDir");

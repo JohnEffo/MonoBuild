@@ -11,10 +11,10 @@ public class DependencyFile
     private const string EmptyLines = "\rdoger\r\r";
 
     [Theory]
-    [InlineData("dependencyDirectory/", true, "if dependency not set then it self parent defaults to true")]
-    [InlineData("self:dependencyDirectory/", true, "if dependency  set self then self parent is true")]
-    [InlineData("parent:dependencyDirectory/", false,
-        "if dependency  set to parent then current build directory is parent")]
+    [InlineData("dependencyDirectory/", false, "if dependency not set then current is parent by default")]
+    [InlineData("self:dependencyDirectory/", true, "if dependency set self then self parent is true")]
+    [InlineData("this:dependencyDirectory/", false,
+        "if dependency set to this then current build directory is parent")]
     public void Can_determine_self_reference_and_parent_dependencies(
         string dependancy,
         bool doesSelfParent,

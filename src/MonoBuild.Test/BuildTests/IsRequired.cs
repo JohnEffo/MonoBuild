@@ -81,22 +81,43 @@ public class IsRequired
         build.Should().BeOfType<ShouldBuild.Yes>(reason);
     }
 
-    [Fact]
-    public void Given_file_changed_in_build_directory_And_file_type_is_ignored_When_Test_Then_no_build_required()
+    [Theory]
+    [InlineData("**/*.md","/quite/a/few/directory/levels/deep/","all directory blobs should match")]
+    [InlineData("quite/a/few/directory/levels/deep/*.md", "/quite/a/few/directory/levels/deep/", "complete relative path should match")]
+    public void Given_file_changed_in_build_directory_And_file_type_is_ignored_When_Test_Then_no_build_required(string blob,string subDirectory,string reason)
     {
         //Given
         RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
-        ISet<string> changes = new HashSet<string> { $"{buildDirectory.Directory}somefile.md" };
+        ISet<string> changes = new HashSet<string> { $"{buildDirectory.Directory}{subDirectory}somefile.md" };
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
         {
-            {buildDirectory,new BuildDirectory(buildDirectory, buildDirectory.IgnoreLocalFilesOfType("*.md"), new RepositoryTarget(Build.TARGET)) }
+            {buildDirectory,new BuildDirectory(buildDirectory, buildDirectory.IgnoreLocalFilesOfType(blob), new RepositoryTarget(Build.TARGET)) }
         };
 
         //When
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().BeOfType<ShouldBuild.No>();
+        build.Should().BeOfType<ShouldBuild.No>("reason");
+    }
+
+    [Theory]
+  [InlineData("quite/a/few/directory/levels/deep/*.md", "/quite/a/few/directory/levels/deeper/", "paths do not match")]
+    public void Given_file_changed_in_build_directory_And_ignore_does_not_match_When_Test_Then_build_required(string blob, string subDirectory, string reason)
+    {
+        //Given
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
+        ISet<string> changes = new HashSet<string> { $"{buildDirectory.Directory}{subDirectory}somefile.md" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            {buildDirectory,new BuildDirectory(buildDirectory, buildDirectory.IgnoreLocalFilesOfType(blob), new RepositoryTarget(Build.TARGET)) }
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //When
+        build.Should().BeOfType<ShouldBuild.Yes>("reason");
     }
 
     [Fact]

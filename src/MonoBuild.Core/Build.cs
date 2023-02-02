@@ -191,7 +191,7 @@ public class Build
     {
         Matcher matcher = new();
         var excludePatternsGroups =
-            buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Local>().Select(t => "**\\" + t.Glob.Pattern);
+            buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Local>().Select(t =>buildDirectory.RoutedName(t.Glob.Pattern));
         matcher.AddIncludePatterns(excludePatternsGroups);
         var filesToRemove = matcher.Match(files).Files.Select(f => f.Path);
         return files.Where(file => !filesToRemove.Contains(file));

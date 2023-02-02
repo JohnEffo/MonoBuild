@@ -34,7 +34,7 @@ public class DepsFileExtractor:IDependencyExtractor
             if (lineParts.Length == 1)
             {
                Path = EnsureEndsWithForwardSlash(lineParts[0]);
-               SelfParents = true;
+               SelfParents = false;
             }
             else
             {
@@ -42,7 +42,7 @@ public class DepsFileExtractor:IDependencyExtractor
                 SelfParents = lineParts[0] switch
                 {
                     "self" => true,
-                    "parent" => false,
+                    "this" => false,
                     _ => throw new InvalidOperationException($"Valid  dependency line formats are: 'dependencyLocation'; 'self:dependencyLocation' for self parenting dependencies or 'parent:dependencyLocation' dependencies which use the current build directory as the parent '" ),
                 };
             }

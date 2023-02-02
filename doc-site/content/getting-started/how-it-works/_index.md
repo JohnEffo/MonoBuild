@@ -36,7 +36,7 @@ We don't necessarily want a build to be triggered for a change in every file typ
 Files are removed from the list of changed files if they do not match any dependency, if any files are left in the list then a build is required. Files are removed by the following process:
 1. Any file not directly in a build directory.
 1. Any file matched by a local exclusion. Every directory in the build tree may have its own exclusion file.
-1. Any in the file excluded by the build directories relative exlusions.
+1. Any in the file excluded by the build directories relative exclusions.
 1. Any file where in a directory where all of its parents have ignored it.
 
 
