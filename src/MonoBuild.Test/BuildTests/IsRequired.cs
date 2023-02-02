@@ -102,7 +102,9 @@ public class IsRequired
     }
 
     [Theory]
-  [InlineData("quite/a/few/directory/levels/deep/*.md", "/quite/a/few/directory/levels/deeper/", "paths do not match")]
+    [InlineData("quite/a/few/directory/levels/deep/*.md", "/quite/a/few/directory/levels/deeper/", "paths do not match blob has mis-mated final leaf 'deeper'" )]
+    [InlineData("quite/a/few/directory/.md", "/quite/a/few/directory/levels/", "paths do not match blob has extra level")]
+
     public void Given_file_changed_in_build_directory_And_ignore_does_not_match_When_Test_Then_build_required(string blob, string subDirectory, string reason)
     {
         //Given
