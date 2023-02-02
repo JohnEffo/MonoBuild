@@ -7,7 +7,7 @@ pre = "<b>1.1. </b>"
 draft = false
 +++
 
-Despite its name, Monobuild does not perform any builds, it attempt to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this, buy building a list of dependent directories of the build directory and seeing if any of the files changes are in those directories would affect the build output of the current directory.
+Despite its name, Monobuild does not perform any builds, it attempts to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this, buy building a list of dependent directories of the build directory and seeing if any of the files changes are in those directories would affect the build output of the current directory.
 
 ## Information Retrieval
 
