@@ -1,9 +1,9 @@
 +++
 title = "How It Works"
 date = 2023-01-30T22:05:33Z
-weight = 5
+weight = 10
 chapter = false
-pre = "<b>1.1. </b>"
+pre = "<b>1.2. </b>"
 draft = false
 +++
 

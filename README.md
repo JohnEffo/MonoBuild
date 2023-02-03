@@ -54,5 +54,5 @@ The ```-t``` indicates the target of the build and ```-q``` suppresses a little 
 
 * Don't want to release the site because of a change in utilities no problem you can configure that.
 * Don't want to release if a Markdown file changes no problem you can configure that
-* Only want to release the site if a change happens in Service B/Contracts, not problem we can configure that.
+* Don't want to release site if for any changes in ServiceB unless it is the contracts directory, not problem we can configure that.
 * Don't use C# or F#, no problem you can configure your dependencies manually, or drop a PR to the repo the code for we use for a [C# project file](src/MonoBuild.Core/ProjDependencyExtractor.cs) is pretty simple.
