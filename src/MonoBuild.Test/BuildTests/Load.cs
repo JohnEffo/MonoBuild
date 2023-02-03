@@ -171,7 +171,7 @@ public class Load
             },
             {
                 $"{repositoryDirectory}/src/{directoryA}/MonoBuild.A.csproj",
-                new MockFileData($"<ProjectReference Include=\"../{directoryb}\\MonoBuild.B.csproj\" />")
+                new MockFileData($"<ProjectReference Include=\"../{directoryb}\\monobuild.b.csproj\" />")
             },
             {
                 $"{repositoryDirectory}/src/{directoryb}/MonoBuild.B.csproj", new MockFileData("")
