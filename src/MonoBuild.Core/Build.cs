@@ -201,7 +201,7 @@ public class Build
         ISet<string> changesInABuildDirectory,
         BuildDirectory dir)
     {
-        return changesInABuildDirectory.Where(change => change.StartsWith(dir.Directory.Directory));
+        return changesInABuildDirectory.Where(change => change.StartsWith(dir.Directory.Directory, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private static ISet<string> RemoveAnyChangesNotInBuildDependancyList(
@@ -209,10 +209,10 @@ public class Build
         HashSet<string> buildDirectories)
         => changes
             .Where(change => !IsMonobuildfile(change))
-            .Where(change => buildDirectories.Any(directory => change.StartsWith(directory)))
+            .Where(change => buildDirectories.Any(directory => change.StartsWith(directory, StringComparison.OrdinalIgnoreCase)))
             .ToHashSet();
 
     private static bool IsMonobuildfile(
         string change)
-        => change.EndsWith(".monobuild.ignore") || change.EndsWith(".monobuild.deps");
+        => change.EndsWith(".monobuild.ignore", StringComparison.OrdinalIgnoreCase) || change.EndsWith(".monobuild.deps", StringComparison.OrdinalIgnoreCase);
 }

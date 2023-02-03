@@ -23,12 +23,16 @@ public class IsRequired
         build.Should().BeOfType<ShouldBuild.No>();
     }
 
-    [Fact]
-    public void Given_file_changed_in_build_directory_And_file_type_not_ignored_When_Test_Then_build_required()
+    [Theory]
+    [InlineData("src/builddir", "src/builddir", "names match")]
+    [InlineData("src/builddir", "Src/Builddir", "case of file on directory not importanct")]
+    [InlineData("Src/Builddir", "src/builddir", "case of file name supplied not important")]
+
+    public void Given_file_changed_in_build_directory_And_file_type_not_ignored_When_Test_Then_build_required(string buildDirectoryNameSupplied, string buildDirectoryNameOnFileSystem, string reason )
     {
         //Given
-        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
-        ISet<string> changes = new HashSet<string> { $"{buildDirectory.Directory}/somefile.cs" };
+        RepositoryTarget buildDirectory = new RepositoryTarget(buildDirectoryNameSupplied);
+        ISet<string> changes = new HashSet<string> { $"{buildDirectoryNameOnFileSystem}/somefile.cs" };
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
         {
             {buildDirectory,new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>(),new RepositoryTarget(Build.TARGET))}
@@ -38,7 +42,7 @@ public class IsRequired
         var build = Build.IsRequired(changes, buildIDirectories);
 
         //When
-        build.Should().BeOfType<ShouldBuild.Yes>();
+        build.Should().BeOfType<ShouldBuild.Yes>(reason);
     }
 
     [Fact]
