@@ -7,7 +7,7 @@ pre = "<b>1.2. </b>"
 draft = false
 +++
 
-Despite its name, Monobuild does not perform any builds, it attempts to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this, buy building a list of dependent directories of the build directory and seeing if any of the files changes are in those directories would affect the build output of the current directory.
+Despite its name, Monobuild does not perform any builds, it attempts to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this, by building a list of dependent directories of the build directory and seeing if any of the files changed are in those directories would affect the build output of the current directory.
 
 ## Information Retrieval
 
@@ -23,11 +23,17 @@ git diff --name-only head head~1
   * The project (csproj, fsproj) file, ```.monobuild.deps``` and  ```.monobuild.ingore``` files read, for the target directory are read. 
   * For each dependant directory found in a project or deps file the the process of loading dependencies and ignore files is repeated until a complete tree of all the build dependencies is created. 
 
-When reading a project files only the directory name is considered so for it references ../Site_A/Site_A.csproj the directory ../Site_A would be checked for a project file, a ```.monobuild.deps``` file and a ```.monobuild.ingore``` file.  
+When reading a project files only the directory name is considered so if it references ```../Site_A/Site_A.csproj``` the directory ```../Site_A``` would be checked for a project file, a ```.monobuild.deps``` file and a ```.monobuild.ingore``` file.  
 
 #### Custom Dependencies
 
-The directory of any project referenced in the csproj/fsproj file is considered a dependant directory, but if you want a build to be triggered by a transitive dependency which is not described by the project files, you can add manual dependency files. 
+The directory of any project referenced in the csproj/fsproj file is considered a **dependant directory**, but if you want a build to be triggered by a transitive dependency which is not described by the project files, you can add manual dependency files. Each dependent directory referenced in a project file can have a ```.monobuild.deps```. The format of the file is one directory per line, the following is a valid ```.monobuild.deps``` file, which has a comment and points to two dependant files:
+
+```shell
+# Line comments are introduced by hash sign
+../src/ServiceA
+../src/ServiceB
+```
 
 #### Ignore Files
 
