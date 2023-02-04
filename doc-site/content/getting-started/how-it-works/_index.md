@@ -7,7 +7,7 @@ pre = "<b>1.2. </b>"
 draft = false
 +++
 
-Despite its name, *MonoBuild* does not perform any builds. It attempts to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this by building a list of dependent directories of the build directory and seeing if any of the files changes are in those directories would affect the build output of the current directory.
+Despite its name, *MonoBuild* does not perform any builds. It attempts to work out from the most recent Git commit, on the current branch, if a build should occur. It decides this by building a list of dependent directories of the build directory and seeing if any of the files changes in those directories would affect the build output of the current directory.
 
 ## Information Retrieval
 
@@ -28,7 +28,13 @@ When reading project files, only the directory name is considered so for referen
 
 #### Custom Dependencies
 
-The directory of any project referenced in the csproj/fsproj file is considered a dependant directory, but if you want a build to be triggered by a transitive dependency which is not described by the project files, you can add manual dependency files. 
+The directory of any project referenced in the csproj/fsproj file is considered a **dependant directory**, but if you want a build to be triggered by a transitive dependency which is not described by the project files, you can add manual dependency files. Each dependent directory referenced in a project file can have a ```.monobuild.deps```. The format of the file is one directory per line, the following is a valid ```.monobuild.deps``` file, which has a comment and points to two dependant files:
+
+```shell
+# Line comments are introduced by hash sign
+../src/ServiceA
+../src/ServiceB
+```
 
 #### Ignore Files
 
