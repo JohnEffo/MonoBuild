@@ -2,10 +2,13 @@ baseURL = 'http://example.org/'
 languageCode = 'en-us'
 title = 'MonoBuild'
 theme = "hugo-theme-learn"
+
 [params]
   # Change default color scheme with a variant one. Can be "red", "blue", "green".
   themeVariant = "blue"
-
+  disableInlineCopyToClipBoard = true
+  disableShortcutsTitle = true
+  disableLandingPageButton = true
 [Languages]
 [Languages.en]
 
@@ -14,3 +17,6 @@ name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
 identifier = "ds"
 url = "https://github.com/JohnEffo/MonoBuild"
 weight = 10
+
+[outputs]
+home = [ "HTML", "RSS", "JSON"]

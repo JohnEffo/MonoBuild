@@ -84,12 +84,12 @@ git commit -m"Intitial Commit"
     src/Utilities/Class1.cs
     <YES>
   ``` 
-- As there is no direct dependency between `Site` and `Utilities` we need to create one, create a file in `src/Site/.monobuild.deps`
+- As there is no direct dependency between `Site` and `Utilities` we need to create one, create a file in `src/Site/.monobuild.deps` with the content below:
   ```shell
   ../utilities
   ```
-  - Create a file src/Site/.monobuild.ignore
-  - Copy the contents below into the file.
+- Create a file src/Site/.monobuild.ignore
+- Copy the contents below into the file.
   ```shell
   ../utilities/**/*
   ```
@@ -114,7 +114,7 @@ This is simply a case of adding an ignore to our ignore file, but we will also d
   src/ServiceB/readme.md
   <YES>
   ```
-- In  ```src/Site/.monobuild.ignore``` add ```**/*.md``` the complete file will now look like this:
+- In  `src/Site/.monobuild.ignore` add `**/*.md` the complete file will now look like this:
   ```shell
   ../utilities/**/*
   **/*/md
