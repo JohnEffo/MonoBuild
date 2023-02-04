@@ -12,17 +12,13 @@ public record ParentChild(
         DependencyLocation child)
     {
         var childRepository = Child.GetRepositoryBasedNameFor(child.Path);
-        return child.SelfParent switch
-        {
-            true => new(new RepositoryTarget(childRepository), new RepositoryTarget(childRepository)),
-            _ => new(this.Child, new RepositoryTarget(childRepository)),
-        };
+        return new(this.Child, new RepositoryTarget(childRepository));
     }
 }
 
 public class Build
 {
-    public const string TARGET = "TARGET";
+    public const string TARGET = "</_target_/>";
 
     /// <summary>
     /// Load the build directory into the dictionary used to determine is the build is required
@@ -83,14 +79,14 @@ public class Build
         var targetBuildDirectory = buildIDirectories.First(bd => bd.Value.Parents.First().Directory == TARGET).Value;
         var notRemovedByTargetRelativeExclusions =
             GetChangesNotRemovedByBuildDirectoryRelativeExclusions(changesNotRemovedByLocalExclusions,
-                targetBuildDirectory);
+                buildIDirectories, targetBuildDirectory);
         if (!notRemovedByTargetRelativeExclusions.Any())
         {
             return new ShouldBuild.No();
         }
 
         var changesNotRemovedByTransitiveExclusions =
-            RemoveChangesRemovedByEveryParentOfDependancy(notRemovedByTargetRelativeExclusions, buildIDirectories);
+            RemoveChangesRemovedByEveryParentOfDependancy(notRemovedByTargetRelativeExclusions, buildIDirectories, targetBuildDirectory);
         if (!changesNotRemovedByTransitiveExclusions.Any())
         {
             return new ShouldBuild.No();
@@ -100,11 +96,37 @@ public class Build
     }
 
     private static ISet<string> GetChangesNotRemovedByBuildDirectoryRelativeExclusions(
-        ISet<string> changesNotRemovedByLocalExclusions,
-        BuildDirectory buildDirectory)
-        => changesNotRemovedByLocalExclusions
-            .Where(change => !FileExcludedByDirectory(change, buildDirectory))
+        ISet<string> remainingChanges,
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories,
+        BuildDirectory targetBuildDirectory)
+    {
+ 
+        var immediatDependanciesOfBuild =
+            buildIDirectories.Values.Where(bd => bd.Parents.Any(p => p == targetBuildDirectory.Directory));
+
+        var filesExcluded = remainingChanges
+            .Select(change => new {File = change, ExcludingPatterns = GetMatchingRelativeExlusions(change, targetBuildDirectory)})
+            .Where(fileExludsionList => fileExludsionList.ExcludingPatterns.Any())
+            .Where(fileExclusionList => ExcludedByClosestParent(immediatDependanciesOfBuild, fileExclusionList.ExcludingPatterns, fileExclusionList.File))
+            .Select(fileExclusionList=>fileExclusionList.File)
             .ToHashSet();
+
+        return remainingChanges.Where(file => !filesExcluded.Contains(file)).ToHashSet();
+    }
+
+    private static bool ExcludedByClosestParent(
+        IEnumerable<BuildDirectory> dependencies,
+        HashSet<IgnoreGlob.Relative> excludingPatterns,
+        string fileName)
+    {
+        var longestExcludingPattern = excludingPatterns.OrderByDescending(p => p.Target.Directory.Length).First();
+        var longestDependancyWhichStartFileName = dependencies
+            .Where(d => fileName.StartsWith(d.Directory.Directory, StringComparison.OrdinalIgnoreCase))
+            .MaxBy(d => d.Directory.Directory.Length)
+            .Directory;
+   
+        return longestExcludingPattern.Target == longestDependancyWhichStartFileName;
+    }
 
 
     /// <summary>
@@ -113,31 +135,34 @@ public class Build
     /// </summary>
     /// <param name="changesNotRemovedByLocalExclusions">The remaining files which could trigger a build</param>
     /// <param name="buildIDirectories"></param>
+    /// <param name="targetBuildDirectory"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     private static ISet<string> RemoveChangesRemovedByEveryParentOfDependancy(
         ISet<string> changesNotRemovedByLocalExclusions,
-        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories)
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories,
+        BuildDirectory targetBuildDirectory)
     {
         return changesNotRemovedByLocalExclusions
             .Select(file => new
             {
                 FileName = file,
-                BuildDirectories = GetBuildDirectoriesWhichContainFile(buildIDirectories, file)
+                ContianingDirectories = GetBuildDirectoriesWhichContainFile(buildIDirectories, file)
             })
             .Where(fileBuildInfo =>
-                !FileExcludedByAllImmediateParents(fileBuildInfo.FileName, fileBuildInfo.BuildDirectories,
-                    buildIDirectories))
+                !FileExcludedByAllImmediateParents(fileBuildInfo.FileName, fileBuildInfo.ContianingDirectories,
+                    buildIDirectories, targetBuildDirectory.Directory))
             .Select(fileBuildInfo => fileBuildInfo.FileName).ToHashSet();
     }
 
     private static bool FileExcludedByAllImmediateParents(
         string fileName,
-        IEnumerable<RepositoryTarget> buildDirectories,
-        Dictionary<RepositoryTarget, BuildDirectory> buildDirectoryMap)
+        IEnumerable<RepositoryTarget> containingDirectories,
+        Dictionary<RepositoryTarget, BuildDirectory> buildDirectoryMap,
+        RepositoryTarget targetBuildDirectory)
     {
-        var parentWhichCouldHaveExlusions = buildDirectories
-            .SelectMany(buidDir => buildDirectoryMap[buidDir].Parents)
+        var parentWhichCouldHaveExlusions = containingDirectories
+            .SelectMany(buidDir => buildDirectoryMap[buidDir].Parents.Where(p => p != targetBuildDirectory ))
             .Where(parent => parent.Directory != TARGET)
             .ToList();
         if (!parentWhichCouldHaveExlusions.Any())
@@ -146,26 +171,34 @@ public class Build
         }
 
         return parentWhichCouldHaveExlusions.All(parent =>
-            FileExcludedByDirectory(fileName, buildDirectoryMap[parent]));
+            GetMatchingRelativeExlusions(fileName, buildDirectoryMap[parent]).Any());
     }
 
-    private static bool FileExcludedByDirectory(
+    private static HashSet<IgnoreGlob.Relative> GetMatchingRelativeExlusions(
         string fileName,
         BuildDirectory buildDirectory)
-    {
-        Matcher matcher = new();
-        var excludePatternsGroups =
-            buildDirectory.IgnoredGlobs.OfType<IgnoreGlob.Relative>().Select(glob => glob.Glob.Pattern);
+        => buildDirectory.IgnoredGlobs
+                .OfType<IgnoreGlob.Relative>()
+                .Where(glob => MatchesFile(glob.Glob, fileName))
+                .ToHashSet();
+                
+  
+    private static bool MatchesFile(
+        Glob globGlob,
+        string fileName)
+    => new Matcher(StringComparison.OrdinalIgnoreCase)
+        .AddInclude(globGlob.Pattern)
+        .Match(fileName)
+        .HasMatches;
+    
 
-        matcher.AddIncludePatterns(excludePatternsGroups);
-        return matcher.Match(fileName).Files.Any();
-    }
 
     private static IEnumerable<RepositoryTarget> GetBuildDirectoriesWhichContainFile(
         Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories,
         string file)
     {
-        return buildIDirectories.Keys.Where(buidlDir => file.StartsWith(buidlDir.Directory));
+        return buildIDirectories.Keys
+            .Where(buildDir => file.StartsWith(buildDir.Directory));
     }
 
     /// <summary>

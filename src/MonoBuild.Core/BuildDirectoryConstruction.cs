@@ -37,7 +37,7 @@ public class BuildDirectoryConstruction
 
     public BuildDirectory ToBuildDirectory()
     {
-        var ignoreBlobs = _ignoreGlobs.Select(blob => IgnoreGlob.Construct(blob, _target  , _children));
+        var ignoreBlobs = new Collection<IgnoreGlob>(_ignoreGlobs.Select(blob => IgnoreGlob.Construct(blob, _target  , _children)).ToArray());
         return new BuildDirectory(_target, ignoreBlobs, _parents.ToArray());
     }
 

@@ -10,27 +10,6 @@ public class DependencyFile
     public const string JunkInJunkOut = "badger\rdoger\rrover lives in a car";
     private const string EmptyLines = "\rdoger\r\r";
 
-    [Theory]
-    [InlineData("dependencyDirectory/", false, "if dependency not set then current is parent by default")]
-    [InlineData("self:dependencyDirectory/", true, "if dependency set self then self parent is true")]
-    [InlineData("this:dependencyDirectory/", false,
-        "if dependency set to this then current build directory is parent")]
-    public void Can_determine_self_reference_and_parent_dependencies(
-        string dependancy,
-        bool doesSelfParent,
-        string reason)
-    {
-        //Arrange
-        DepsFileExtractor sut = new DepsFileExtractor();
-
-        //Act
-        var result = sut.GetDependencyFor(dependancy);
-
-        //Act
-        result.Select(r => r.SelfParent).Should()
-            .AllSatisfy(selfparent => selfparent.Should().Be(doesSelfParent), reason);
-
-    }
 
     [Fact]
     public void Can_process_valid_dependency_file()

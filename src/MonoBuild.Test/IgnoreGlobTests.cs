@@ -35,10 +35,37 @@ public class IgnoreGlobTests
         var result = IgnoreGlob.Construct(new Glob($"../otherBuildDir/.iac/{globEnd}"), currentBuildDirectory, dependencies) as IgnoreGlob.Relative;
 
         //Assert
-        result.Target.Directory.Should().Be("src/otherBuildDir");
-        result.Glob.Pattern.Should().Be($"src/otherBuildDir/.iac/{globEnd}", description);
+        result.Target.Directory.Should().Be("src/otherbuilddir");
+        result.Glob.Pattern.Should().Be($"src/otherbuilddir/.iac/{globEnd}", description);
 
     }
+    [Fact]
+    public void
+        When_constructing_relative_glob_the_longest_dependent_directory_which_the_glob_matches_should_be_chosen()
+    {
+        //Arrange
+        RepositoryTarget currentBuildDirectory = new RepositoryTarget("src/buildDir");
+        var dependencies = new Collection<RepositoryTarget>
+        {
+            new RepositoryTarget("src/otherBuildDir"),
+            new RepositoryTarget("src/otherBuildDir/sub"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2/sub3"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2/sub3/sub4"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2/sub3/sub4V2"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2/sub3/sub4/deeper1"),
+            new RepositoryTarget("src/otherBuildDir/sub/sub2/sub3/sub4/deeper2"),
+        };
+       
+
+        //Act
+        var result = IgnoreGlob.Construct(new Glob($"../otherBuildDir/sub/sub2/sub3/sub4/*.xml"), currentBuildDirectory, dependencies) as IgnoreGlob.Relative;
+
+        //Assert
+        result.Target.Directory.Should().Be("src/otherbuilddir/sub/sub2/sub3/sub4");
+
+    }
+
 
     [Fact]
     public void Cannot_ignore_files_which_are_not_part_of_another_dependency()

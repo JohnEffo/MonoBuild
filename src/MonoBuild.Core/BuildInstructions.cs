@@ -3,7 +3,7 @@
 namespace MonoBuild.Core;
 
 public record BuildDirectory(RepositoryTarget Directory,
-    IEnumerable<IgnoreGlob> IgnoredGlobs,
+    Collection<IgnoreGlob> IgnoredGlobs,
 params RepositoryTarget[] Parents )
 {
     public string RoutedName(
@@ -21,26 +21,45 @@ public record DirectoryLoadResult(
 /// <param name="Path">The path to the dependency</param>
 /// <param name="SelfParent">If a dependency self parents then it's parent cannot be checked to see if it has a relative ignore glob </param>
 public record DependencyLocation(
-    string Path,
-    bool SelfParent = false);
+    string Path
+  );
 
-public record Glob(
-    string Pattern);
+public record Glob
+{
+    public Glob(
+        string pattern)
+    {
+        Pattern = pattern.ToLower();
+    }
+
+    public string Pattern { get; }
+}
+
+
 
 
 /// <summary>
 /// The repository relative directory of the build
 /// </summary>
 /// <param name="Directory">The repository relative directory of the build</param>
-public record RepositoryTarget(
-    string Directory)
+public record RepositoryTarget
 {
+    public string Directory { get; }
+    public RepositoryTarget(
+        string directory)
+    {
+        Directory = directory.ToLower();
+    }
+
     public string GetRepositoryBasedNameFor(
         string path)
     {
         var readOnlySpan = Path.Combine(Directory, path).Replace("\\", "/");
         var dir = Path.GetDirectoryName(readOnlySpan).Replace("\\", "/");
-        return new DirectoryInfo(dir).FullName.Replace("\\", "/").Replace(Environment.CurrentDirectory.Replace("\\", "/") + "/", "");
+        return new DirectoryInfo(dir).FullName
+            .Replace("\\", "/")
+            .Replace(Environment.CurrentDirectory.Replace("\\", "/") + "/", "")
+            .ToLower();
     }
 }
 

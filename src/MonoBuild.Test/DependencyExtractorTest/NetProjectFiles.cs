@@ -29,8 +29,6 @@ public class NetProjectFiles
         result
             .Select(r => r.Path)
             .Should().BeEquivalentTo(new Collection<string> { "../MonoBuild.Core/MonoBuild.Core.csproj" });
-        result
-            .Select(r => r.SelfParent).Should().AllSatisfy(selfparent => selfparent.Should().BeFalse());
     }
 
     [Fact]

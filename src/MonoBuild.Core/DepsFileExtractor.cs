@@ -20,42 +20,13 @@ public class DepsFileExtractor:IDependencyExtractor
     public IEnumerable<DependencyLocation> GetDependencyFor(
         string dependencyBlob)
         => MonoBuildFileLines.Process(dependencyBlob)
-            
-            .Select(line => new Dependancy(line) )
-            .Select(dep => new DependencyLocation(dep.Path,dep.SelfParents));
+            .Select(EnsureEndsWithForwardSlash)
+            .Select(line => new DependencyLocation(line));
+    public string SearchPattern => ".monobuild.deps";
 
-    private record Dependancy
-    {
-        public bool SelfParents { get;  }
-
-        public Dependancy(string line)
-        {
-            var lineParts = line.Split(":");
-            if (lineParts.Length == 1)
-            {
-               Path = EnsureEndsWithForwardSlash(lineParts[0]);
-               SelfParents = false;
-            }
-            else
-            {
-                Path = EnsureEndsWithForwardSlash(lineParts[1]);
-                SelfParents = lineParts[0] switch
-                {
-                    "self" => true,
-                    "this" => false,
-                    _ => throw new InvalidOperationException($"Valid  dependency line formats are: 'dependencyLocation'; 'self:dependencyLocation' for self parenting dependencies or 'parent:dependencyLocation' dependencies which use the current build directory as the parent '" ),
-                };
-            }
-        }
-
-        private string? EnsureEndsWithForwardSlash(
-            string linePart)
+    private string? EnsureEndsWithForwardSlash(
+        string linePart)
         => linePart.EndsWith("/") ? linePart : linePart + "/";
 
-        public string Path { get; }
-}
-     
-    
-
-    public string SearchPattern => ".monobuild.deps";
+    public string Path { get; }
 }

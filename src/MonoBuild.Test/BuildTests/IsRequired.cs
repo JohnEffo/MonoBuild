@@ -331,5 +331,90 @@ public class IsRequired
         //When
         build.Should().BeOfType<ShouldBuild.No>();
     }
-    
+
+    [Fact]
+    public void
+        Given_file_changed_in_sub_directory_of_complety_ignored_directory_but_is_located_in_sub_directory_which_is_a_dependancy_When_test_then_build_required()
+    {
+        //Given
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
+        RepositoryTarget immediateDependencyA = new RepositoryTarget("src/dependencyA");
+        RepositoryTarget subDirectoryA = new RepositoryTarget("src/dependencyA/Contracts");
+        var ingoreAllDependancyA = new Glob("../dependencyA/**/*");
+        ISet<string> changes = new HashSet<string> { $"{subDirectoryA.Directory}/notImportant/somefile.cs" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            { buildDirectory, new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>
+            {
+                IgnoreGlob.Construct(ingoreAllDependancyA,buildDirectory, new Collection<RepositoryTarget>{immediateDependencyA, subDirectoryA} )
+            }, new RepositoryTarget(Build.TARGET))},
+            {immediateDependencyA, new BuildDirectory(immediateDependencyA, new Collection<IgnoreGlob>(), buildDirectory)},
+            {subDirectoryA, new BuildDirectory(subDirectoryA,new Collection<IgnoreGlob>(), buildDirectory )}
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //Then
+        build.Should().BeOfType<ShouldBuild.Yes>();
+    }
+
+    [Fact]
+    public void
+        Given_file_changed_in_sub_directory_of_completely_ignored_directory_and_another_sub_directory_is_also_a_dependnacy_When_test_then_build_required()
+    {
+        //Given
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
+        RepositoryTarget immediateDependencyA = new RepositoryTarget("src/dependencyA");
+        RepositoryTarget subDirectoryA = new RepositoryTarget("src/dependencyA/Contracts");
+        RepositoryTarget subDirectoryB = new RepositoryTarget("src/dependencyA/Documents");
+        var ingoreAllDependancyA = new Glob("../dependencyA/**/*");
+        ISet<string> changes = new HashSet<string> { $"{subDirectoryB.Directory}/notImportant/readme.md" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            { buildDirectory, new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>
+            {
+                IgnoreGlob.Construct(ingoreAllDependancyA,buildDirectory, new Collection<RepositoryTarget>{immediateDependencyA, subDirectoryA} )
+            }, new RepositoryTarget(Build.TARGET))},
+            {immediateDependencyA, new BuildDirectory(immediateDependencyA, new Collection<IgnoreGlob>(), buildDirectory)},
+            {subDirectoryA, new BuildDirectory(subDirectoryA,new Collection<IgnoreGlob>(), buildDirectory )}
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //Then
+        build.Should().BeOfType<ShouldBuild.No>();
+    }
+
+
+    [Fact]
+    public void
+        Given_file_changed_in_sub_directory_of_complety_ignored_directory_and_sub_directory_is_both_a_dependency_and_completely_ignored_When_test_then_no_build_required()
+    {
+        //Given
+        RepositoryTarget buildDirectory = new RepositoryTarget("src/builddir");
+        RepositoryTarget immediateDependencyA = new RepositoryTarget("src/dependencyA");
+        RepositoryTarget subDirectoryA = new RepositoryTarget("src/dependencyA/Contracts");
+        var ignoreAllDependencyA = new Glob("../dependencyA/**/*");
+        var ignoreContractsSubdirectoryOfDependencyA = new Glob("../dependencyA/Contracts/**/*");
+        ISet<string> changes = new HashSet<string> { $"{subDirectoryA.Directory}/notImportant/somefile.cs" };
+        Dictionary<RepositoryTarget, BuildDirectory> buildIDirectories = new Dictionary<RepositoryTarget, BuildDirectory>
+        {
+            { buildDirectory, new BuildDirectory(buildDirectory, new Collection<IgnoreGlob>
+            {
+                IgnoreGlob.Construct(ignoreAllDependencyA,buildDirectory, new Collection<RepositoryTarget>{immediateDependencyA, subDirectoryA} ),
+                IgnoreGlob.Construct(ignoreContractsSubdirectoryOfDependencyA,buildDirectory, new Collection<RepositoryTarget>{immediateDependencyA, subDirectoryA} )
+            }, new RepositoryTarget(Build.TARGET))},
+            {immediateDependencyA, new BuildDirectory(immediateDependencyA, new Collection<IgnoreGlob>(), buildDirectory)},
+            {subDirectoryA, new BuildDirectory(subDirectoryA,new Collection<IgnoreGlob>(), buildDirectory )}
+        };
+
+        //When
+        var build = Build.IsRequired(changes, buildIDirectories);
+
+        //Then
+        build.Should().BeOfType<ShouldBuild.No>();
+    }
+
 }
