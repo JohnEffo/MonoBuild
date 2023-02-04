@@ -5,7 +5,7 @@ draft: false
 weight: 6
 ---
 ### Prerequisites
-You will need to have Dotnet 7 installed for instructions on how to do this: https://dotnet.microsoft.com/en-us/download
+You will need to have Dotnet 7 installed. For instructions on how to do this, you can follow this link: https://dotnet.microsoft.com/en-us/download
 
 
 ### Building 
@@ -21,4 +21,4 @@ cd monobuild
 dotnet build
 ```
 
-The build artifacts will located at ./monobuild/src/bin/debug/net7.0. You may want to copy them from here and place them into a directory in your path environment variable.
+The build artifacts will located at `./monobuild/src/bin/debug/net7.0`. You may want to copy them from here and place them into a directory in your path environment variable.
