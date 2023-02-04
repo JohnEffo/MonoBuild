@@ -7,12 +7,12 @@ pre = "<b>1.3. </b>"
 draft = false
 +++
 
-On the front page we showed a code hierarchy and said that Monobuild could do all of the following
+On the front page we showed a code hierarchy and said that **Monobuild** could do all of the following:
 
 * Don't want to release the site because of a change in utilities.
 * Don't want to release if a Markdown file changes.
 * Don't want to release site if for any changes in ServiceB unless it is the contracts directory.
-* Don't use C# or F#, you can configure your dependencies manually.
+* Don't use C# or F#? You can configure your dependencies manually.
 
 #### Project Structure
 ```mermaid
@@ -26,7 +26,7 @@ graph TD;
     U[Utilites]
 ```
 
-In this section we will show how to do all of the things we stated as possible on the front page. The diagram above Shows the project structure from a dependency point of view,  but a more common layout directory wise would be as below:  
+In this section we will show how to do all of the things we stated as possible on the front page. The diagram above shows the project structure from a dependency point of view, but a more common layout directory wise would be as below:  
 
 #### Folder Structure
 
@@ -73,22 +73,21 @@ git add .
 git commit -m"Intitial Commit"
 ```
 
-#### Don't want to release the site because of a change in utilities.
+#### Don't want to release the site because of a change in utilities
 - Firstly lets see what happens if we do not ignore a change. 
-- Make an update to the src/Utilities/Class1.cs
-- Commit the change:- using ```git add .``` and ```git commit -m"update utilties"```
-- In the Demo directory execute ```monobuild -t .src/Site```, you should see the results below.
+- Make an update to the `src/Utilities/Class1.cs`
+- Commit the change:- using `git add .` and `git commit -m "update utilties"`
+- In the Demo directory execute `monobuild -t .src/Site`, you should see the results below:
   ```shell
     ❯ monobuild -t ./src/Site
     The following files changed:
     src/Utilities/Class1.cs
     <YES>
   ``` 
-- As there is no direct dependency between Site and Utilities we need to create one, create a file in src/Site/.monobuild.deps
+- As there is no direct dependency between `Site` and `Utilities` we need to create one, create a file in `src/Site/.monobuild.deps`
   ```shell
   ../utilities
   ```
-- Now we have a dependency we can ignore any globing patterns we like within the directory. 
   - Create a file src/Site/.monobuild.ignore
   - Copy the contents below into the file.
   ```shell
@@ -120,35 +119,35 @@ This is simply a case of adding an ignore to our ignore file, but we will also d
   ../utilities/**/*
   **/*/md
   ```
-- Execute ```monobuild -t .src/Site```, you should see the results below.
+- Execute ```monobuild -t .src/Site```, you should see the results below:
   ```shell
   The following files changed:
   src/ServiceB/readme.md
   <YES>
   ```
 
-> Notice we have only removed the file in Site to ignore Markdown files in ServiceB we need to add another ignore file to ServiceB
+> Notice we have only removed the file in `Site` to ignore Markdown files in `ServiceB` we need to add another ignore file to `ServiceB`
 
-- Create a file src/ServiceB/.monobuild.ignore with ```**/*.md``` as the ignore glob.
-- Execute ```monobuild -t .src/Site```, no build is now required.
+- Create a file `src/ServiceB/.monobuild.ignore` with `**/*.md` as the ignore glob.
+- Execute `monobuild -t .src/Site`, no build is now required.
 
 #### Don't want to release site for any changes in ServiceB unless it is in the contracts directory
 
-For this we need to ignore all changes in ServiceB, we no how to achieve this by ignoring all files in ServiceB and create a build dependency for the contracts folder.
+For this we need to ignore all changes in `ServiceB`, we no how to achieve this by ignoring all files in `ServiceB` and create a build dependency for the contracts folder.
 
-- Create a folder in ```src/ServiceB/``` called contracts.
+- Create a folder in `src/ServiceB/` called contracts.
 - Create a file in this folder with some contents in it.
-- Commit the changes to Git ```git add .``` and ```git commit -m"Updated contracts"```
-- In the Demo directory execute ```monobuild -t .src/Site``` a build will be required.
-- In src/Site/.monobuild.ignore add a line ```../ServiceB/**/*```, to ignore all files in ServiceB.
-- In the Demo directory execute ```monobuild -t .src/Site``` a build will not be required we are ignoring all files.
-- In src/Site/.monobuild.deps add a line ```../ServiceB/Contracts```
-- In the Demo directory execute ```monobuild -t .src/Site``` a build will be required.
+- Commit the changes to Git `git add .` and `git commit -m "Updated contracts"`
+- In the Demo directory, execute `monobuild -t .src/Site` a build will be required.
+- In `src/Site/.monobuild.ignore`, add a line `../ServiceB/**/*`, to ignore all files in ServiceB.
+- In the Demo directory, execute `monobuild -t .src/Site` a build will not be required we are ignoring all files.
+- In `src/Site/.monobuild.deps`, add a line `../ServiceB/Contracts`
+- In the Demo directory, execute `monobuild -t .src/Site` a build will be required.
 
-You can test that any other change committed in ```src/ServiceB``` will not cause a build only changes within the contracts directory.
+You can test that any other change committed in `src/ServiceB` will not cause a build only changes within the contracts directory.
 
 #### Don't use C# or F#, you can configure your dependencies manually
 
-In both [Don't want to release the site because of a change in utilities](#dont-want-to-release-the-site-because-of-a-change-in-utilities) and [Don't want to release site for any changes in ServiceB unless it is in the contracts directory](#dont-want-to-release-site-for-any-changes-in-serviceb-unless-it-is-in-the-contracts-directory) we manually created a dependency.
+In both [Don't want to release the site because of a change in utilities](#dont-want-to-release-the-site-because-of-a-change-in-utilities) and [Don't want to release site for any changes in ServiceB unless it is in the contracts directory](#dont-want-to-release-site-for-any-changes-in-serviceb-unless-it-is-in-the-contracts-directory), we manually created a dependency.
 
-Dependencies for a build can be created by adding a ```.monobuild.deps``` and listing the dependencies one per line. The dependencies should be relative to the current directory so you will normally need to exit the current directory by prefixing your directory using "../".  
+Dependencies for a build can be created by adding a `.monobuild.deps` and listing the dependencies one per line. The dependencies should be relative to the current directory so you will normally need to exit the current directory by prefixing your directory using `"../"`.  
