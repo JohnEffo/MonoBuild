@@ -28,7 +28,7 @@ With option two we don't have this problem; whenever we merge our change to the 
 
 Given a project set up as below:
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     S[Site]-->B;
     S-->C;
@@ -37,7 +37,7 @@ graph TD;
     A-->C;
     C[ServiceA.API]
     U[Utilites]
-```
+{{< /mermaid >}}
 
 Using **MonoBuild** without any configuration (assuming C#, F# project), if we commit a change to a ```Service A API\MakePurchaseCommand.cs``` we can execute the following:
 

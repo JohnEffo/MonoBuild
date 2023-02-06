@@ -15,7 +15,7 @@ On the front page we showed a code hierarchy and said that **Monobuild** could d
 * Don't use C# or F#? You can configure your dependencies manually.
 
 #### Project Structure
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     S[Site]-->B;
     S-->C;
@@ -24,13 +24,13 @@ graph TD;
     A-->C;
     C[Service A API]
     U[Utilites]
-```
+{{< /mermaid >}}
 
 In this section we will show how to do all of the things we stated as possible on the front page. The diagram above shows the project structure from a dependency point of view, but a more common layout directory wise would be as below:  
 
 #### Folder Structure
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     R[src]-->S
     R-->B
@@ -42,7 +42,7 @@ graph TD;
     B[Service B]
     C[Service A API]
     U[Utilites]
-```
+{{< /mermaid >}}
 
 #### Lets create the project
 

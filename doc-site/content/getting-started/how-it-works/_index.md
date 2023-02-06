@@ -54,20 +54,20 @@ Files are removed from the list of changed files if they do not match any depend
 
 If we are building `Service_A` and all the changes happen in `Service_B` which is not a dependency of `Service_A` then all the files can be removed from the list and no build is required. If we are building `Site`, a change in any file in `Service_A` would trigger a build.
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     S[Site]-->B;
     S-->A;
     A[Service_A];
     B[Service_B]-.->C;
     C[Files Changed]
-```
+{{< /mermaid >}}
 
 ### Step 2: Files matched by a local exclusion
 
 A build directory or a dependant directory contain a file named `.monobuild.ignore` which will be processed for ignore globs. In the diagram below, we have two ignore files containing one ignore glob each:
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     S[Site]-->B;
     S-->A;
@@ -76,7 +76,7 @@ graph TD;
     B[Service_B]-. .monobuild.ignore .->C
     C{{**/*.md }}
     E{{**/*.SASS }}
-```
+{{< /mermaid >}}
 
 If the list of changes is [Site/reame.md, Site/Service_A/style.SASS, Site/Service_A/readme.md] and `Site` is the build target:
 
@@ -87,7 +87,8 @@ See [file globbing in .net](https://learn.microsoft.com/en-us/dotnet/core/extens
 
 >Note that the patterns are file globbing patterns, not project globbing patterns. They do not understand project structure. So if the dependency tree is as above but the file structure is as below then given the following list of changes [`src/Site/reame.md`, `src/Service_A/style.SASS`, `src/Service_A/readme.md`], the `readme.md` file in `Service_A` would not be removed from the list of changes for the command ```monobuild -t src/Site```. This would cause the result to be **\<YES\>** a build is required.
 
-```mermaid
+
+{{<mermaid align="center">}}
 graph TD;
     R[src]-->S
     S[Site]-. .monobuild.ignore .->E
@@ -98,13 +99,13 @@ graph TD;
     B[Service_B]-. .monobuild.ignore .->C
     C{{**/*.md }}
     E{{**/*.SASS }}
-```
+{{< /mermaid >}}
 
 ### Step 3: Files excluded by the build directories relative ignore list
 
 We have seen that build target directories and their dependencies can have locally applied ignores but we can also ignore files relative to the directory. Relative ignore files start with `../` to navigate out of the current directory. In the below diagram, the `Site` is ignoring all xml files located in the Service_A/PaymentSchema folder (not shown). If we are testing if a build is required for `Site` and the changed files are [`src/Service_A/BankSchema/payments.xml`, `src/Service_A/BankSchema/PaymentContracts.cs`] file `src/Service_A/BankSchema/payments.xml` would be removed leaving just `PaymentContracts.cs` which would trigger a build.
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     R[src]-->S
     S[Site]-. .monobuild.ignore .->E
@@ -115,13 +116,13 @@ graph TD;
     B[Service_B]-. .monobuild.ignore .->C
     C{{**/*.md }}
     E{{../Service_A/BankSchema/*.xml }}
-```
+{{< /mermaid >}}
 
 ### Step 4: Files in a directory where all of its parents have ignored it.
 
 Target directories can have relative ignores and so can the targets dependencies, but all of the target dependencies must ignore the file. If we have a project with the folder structure of:
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     R[src]-->SA
     R-->SB
@@ -133,18 +134,18 @@ graph TD;
     SA[Service_A]
     SU[Utilites]
     SBI{{../Utlities/collections/**/*.cs}}
-```
+{{< /mermaid >}}
 
 And a dependency structure of:
 
-```mermaid
+{{<mermaid align="center">}}
 graph TD;
     ST[Site]-->SB
     ST-->SA
     SB[Service_B]-->SU
     SA[Service_A]-->SU
     SU[Utilites]
-```
+{{< /mermaid >}}
 
 Testing to see if `Site` should build with a changed file [src/Utilities/Collections/DictionaryExtensions.cs]. 
 * The changed file will not have been removed by any of the previous steps. 
